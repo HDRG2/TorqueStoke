@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1f3a5f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="TorqueStock">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23e2662f%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-size=%2738%27 font-family=%27Arial%27 font-weight=%27bold%27 fill=%27white%27 text-anchor=%27middle%27%3ET%3C/text%3E%3C/svg%3E">
+  <title>TorqueStock — Reportes</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="barra-sup">
+    <div class="marca">
+      <div class="icono">T</div>
+      <div>TorqueStock <small>Reportes y auditoría</small></div>
+    </div>
+    <nav class="usuario-info">
+      <span class="nombre" id="nombreUsuario"></span>
+      <span class="rol" id="rolUsuario"></span>
+      <a class="btn btn-borde btn-sm" href="panel.html">← Panel</a>
+      <button class="btn btn-borde btn-sm" id="btnSalir">Cerrar sesión</button>
+    </nav>
+  </header>
+
+  <div class="contenedor">
+    <div class="encabezado-impresion">
+      <h2>TorqueStock — Reporte del Almacén de Herramientas de Torque</h2>
+      <p>Grupo Industrial Par-Tec · Generado el <span id="fechaReporte"></span> por <span id="usuarioReporte"></span></p>
+    </div>
+
+    <div class="panel seccion-reporte no-imprimir">
+      <div class="panel-cab">
+        <h2>Reportes ejecutivos y de auditoría</h2>
+        <div class="botonera">
+          <button class="btn btn-borde btn-sm" id="csvInventario">Inventario (CSV)</button>
+          <button class="btn btn-borde btn-sm" id="csvAgenda">Agenda de calibración (CSV)</button>
+          <button class="btn btn-borde btn-sm" id="csvMovs">Movimientos filtrados (CSV)</button>
+          <button class="btn btn-primario btn-sm" id="btnImprimir">Imprimir / PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen del almacén -->
+    <section class="kpis kpis-6">
+      <div class="kpi"><div class="titulo">Herramientas activas</div><div class="valor" id="rTotal">0</div></div>
+      <div class="kpi disp"><div class="titulo">Disponibles</div><div class="valor" id="rDisp">0</div></div>
+      <div class="kpi prest"><div class="titulo">En préstamo</div><div class="valor" id="rPrest">0</div></div>
+      <div class="kpi venc"><div class="titulo">Calibración vencida</div><div class="valor" id="rVenc">0</div></div>
+      <div class="kpi rep"><div class="titulo">En reparación</div><div class="valor" id="rRep">0</div></div>
+      <div class="kpi ext"><div class="titulo">Extraviadas</div><div class="valor" id="rExt">0</div></div>
+    </section>
+
+    <!-- Utilización -->
+    <div class="reporte-grid">
+      <section class="panel">
+        <div class="panel-cab"><h2>Herramientas más prestadas</h2></div>
+        <ul class="barras" id="usoHerramienta"></ul>
+      </section>
+      <section class="panel">
+        <div class="panel-cab"><h2>Préstamos por línea</h2></div>
+        <ul class="barras" id="usoLinea"></ul>
+      </section>
+      <section class="panel">
+        <div class="panel-cab"><h2>Operadores con más préstamos</h2></div>
+        <ul class="barras" id="usoOperador"></ul>
+      </section>
+    </div>
+
+    <!-- Calibración y responsables -->
+    <div class="rejilla rejilla-mitad">
+      <section class="panel seccion-reporte">
+        <div class="panel-cab"><h2>Agenda de calibración (vencidas y por vencer)</h2></div>
+        <div class="tabla-envoltura">
+          <table class="tabla-movil">
+            <thead><tr><th>Código</th><th>Herramienta</th><th>Próx. calibración</th><th>Estado</th></tr></thead>
+            <tbody id="tablaAgenda"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="panel seccion-reporte">
+        <div class="panel-cab"><h2>Responsables pendientes (extravíos y préstamos excedidos)</h2></div>
+        <div class="tabla-envoltura">
+          <table class="tabla-movil">
+            <thead><tr><th>Código</th><th>Responsable</th><th>Línea</th><th>Situación</th></tr></thead>
+            <tbody id="tablaResponsables"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- Bitácora completa con filtros -->
+    <section class="panel seccion-reporte">
+      <div class="panel-cab"><h2>Bitácora completa de movimientos</h2><span class="contador-res" id="contMovs"></span></div>
+      <div class="filtros-reporte no-imprimir">
+        <div class="campo"><label for="fTexto">Buscar</label><input id="fTexto" type="search" placeholder="Código, operador, línea…"></div>
+        <div class="campo"><label for="fTipo">Movimiento</label>
+          <select id="fTipo">
+            <option value="">Todos</option>
+            <option>Préstamo</option><option>Devolución</option><option>Alta</option><option>Recalibración</option>
+            <option>Reparación</option><option>Reincorporación</option><option>Extravío</option><option>Baja</option>
+          </select>
+        </div>
+        <div class="campo"><label for="fDesde">Desde</label><input id="fDesde" type="date"></div>
+        <div class="campo"><label for="fHasta">Hasta</label><input id="fHasta" type="date"></div>
+        <button class="btn btn-borde" id="fLimpiar">Limpiar</button>
+      </div>
+      <div class="tabla-envoltura">
+        <table class="tabla-movil">
+          <thead><tr><th class="solo-movil"></th><th>Fecha</th><th>Código</th><th>Movimiento</th><th>Detalle</th><th>Usuario</th></tr></thead>
+          <tbody id="tablaMovs"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/datos.js"></script>
+  <script src="js/sesion.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/reportes.js"></script>
+</body>
+</html>

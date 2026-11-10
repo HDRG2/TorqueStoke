@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1f3a5f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="TorqueStock">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23e2662f%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-size=%2738%27 font-family=%27Arial%27 font-weight=%27bold%27 fill=%27white%27 text-anchor=%27middle%27%3ET%3C/text%3E%3C/svg%3E">
+  <title>TorqueStock — Panel</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Barra superior -->
+  <header class="barra-sup">
+    <div class="marca">
+      <div class="icono">T</div>
+      <div>TorqueStock <small>Grupo Industrial Par-Tec</small></div>
+    </div>
+    <nav class="usuario-info">
+      <span class="nombre" id="nombreUsuario"></span>
+      <span class="rol" id="rolUsuario"></span>
+      <a class="btn btn-borde btn-sm oculto" id="lnkReportes" href="reportes.html">Reportes</a>
+      <a class="btn btn-borde btn-sm" href="ayuda.html">? Ayuda</a>
+      <a class="btn btn-borde btn-sm" href="acerca.html">Acerca</a>
+      <button class="btn btn-borde btn-sm" id="btnSalir">Cerrar sesión</button>
+    </nav>
+  </header>
+
+  <div class="contenedor">
+    <!-- RF-08: Tarjetas KPI -->
+    <section class="kpis kpis-6">
+      <div class="kpi" data-filtro="todas" title="Ver todas">
+        <div class="titulo">Total de herramientas</div>
+        <div class="valor" id="kpiTotal">0</div>
+      </div>
+      <div class="kpi disp" data-filtro="disponible" title="Ver disponibles">
+        <div class="titulo">Disponibles</div>
+        <div class="valor" id="kpiDisp">0</div>
+      </div>
+      <div class="kpi prest" data-filtro="prestamo" title="Ver en préstamo">
+        <div class="titulo">En préstamo</div>
+        <div class="valor" id="kpiPrest">0</div>
+      </div>
+      <div class="kpi venc" data-filtro="vencida" title="Ver vencidas">
+        <div class="titulo">Calibración vencida</div>
+        <div class="valor" id="kpiVenc">0</div>
+      </div>
+      <div class="kpi rep" data-filtro="reparacion" title="Ver en reparación">
+        <div class="titulo">En reparación</div>
+        <div class="valor" id="kpiRep">0</div>
+      </div>
+      <div class="kpi ext" data-filtro="extraviada" title="Ver extraviadas">
+        <div class="titulo">Extraviadas</div>
+        <div class="valor" id="kpiExt">0</div>
+      </div>
+    </section>
+
+    <!-- Alerta: préstamos no devueltos al cierre del turno -->
+    <div class="alerta oculto" id="alertaTurno" role="button" tabindex="0"></div>
+
+    <div class="rejilla">
+      <!-- RF-03: Inventario con buscador y filtros -->
+      <section class="panel">
+        <div class="panel-cab">
+          <h2>Inventario de herramientas</h2>
+          <div class="acciones">
+            <button class="btn btn-borde btn-sm oculto" id="btnRestablecer" title="Vuelve a cargar los datos de ejemplo">Restablecer demo</button>
+            <button class="btn btn-primario btn-sm oculto" id="btnNueva">+ Nueva herramienta</button>
+          </div>
+        </div>
+        <div class="herramientas-barra">
+          <input class="buscador" id="buscador" type="search" placeholder="Buscar por código, nombre, categoría, operador o línea…">
+          <div class="filtros" id="filtros">
+            <button class="filtro activo" data-filtro="todas">Todas</button>
+            <button class="filtro" data-filtro="disponible">Disponible</button>
+            <button class="filtro" data-filtro="prestamo">En préstamo</button>
+            <button class="filtro" data-filtro="excedida">Excede turno</button>
+            <button class="filtro" data-filtro="porvencer">Por vencer</button>
+            <button class="filtro" data-filtro="vencida">Calibración vencida</button>
+            <button class="filtro" data-filtro="reparacion">En reparación</button>
+            <button class="filtro" data-filtro="extraviada">Extraviadas</button>
+            <button class="filtro" data-filtro="baja">Bajas</button>
+          </div>
+        </div>
+        <div class="tabla-envoltura">
+          <table class="tabla-movil">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Herramienta</th>
+                <th>Rango (Nm)</th>
+                <th>Calibración</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaCuerpo"></tbody>
+          </table>
+        </div>
+        <div class="panel-cuerpo contador-res" id="contadorRes"></div>
+      </section>
+
+      <!-- RF-08: Bitácora de movimientos recientes -->
+      <aside class="panel">
+        <div class="panel-cab"><h2>Movimientos recientes</h2></div>
+        <ul class="bitacora" id="bitacora"></ul>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Modal RF-02: Alta de herramienta -->
+  <div class="modal-fondo" id="modalAlta">
+    <form class="modal" id="formAlta" novalidate>
+      <div class="modal-cab">
+        <h3>Nueva herramienta</h3>
+        <button type="button" class="modal-cerrar" data-cerrar>&times;</button>
+      </div>
+      <div class="modal-cuerpo">
+        <div class="fila-campos">
+          <div class="campo"><label for="altaCodigo">Código / ID</label><input id="altaCodigo" maxlength="15" placeholder="TQ-015"></div>
+          <div class="campo"><label for="altaCategoria">Categoría / tipo</label><select id="altaCategoria"></select></div>
+        </div>
+        <div class="campo"><label for="altaNombre">Nombre de la herramienta</label><input id="altaNombre" maxlength="60" placeholder="Llave de clic 1/2&quot; Norbar"></div>
+        <div class="fila-campos">
+          <div class="campo"><label for="altaMin">Torque mínimo (Nm)</label><input id="altaMin" type="number" min="0" step="0.1"></div>
+          <div class="campo"><label for="altaMax">Torque máximo (Nm)</label><input id="altaMax" type="number" min="0" step="0.1"></div>
+        </div>
+        <div class="campo"><label for="altaFecha">Fecha de próxima calibración</label><input id="altaFecha" type="date"></div>
+        <div class="error-form" id="errorAlta"></div>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-borde" data-cerrar>Cancelar</button>
+        <button type="submit" class="btn btn-primario">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal RF-04: Préstamo -->
+  <div class="modal-fondo" id="modalPrestamo">
+    <form class="modal" id="formPrestamo" novalidate>
+      <div class="modal-cab">
+        <h3>Registrar préstamo</h3>
+        <button type="button" class="modal-cerrar" data-cerrar>&times;</button>
+      </div>
+      <div class="modal-cuerpo">
+        <div class="resumen-herr" id="prestamoResumen"></div>
+        <div class="fila-campos">
+          <div class="campo"><label for="presEmpleado">No. de empleado</label><input id="presEmpleado" inputmode="numeric" maxlength="10" placeholder="10452"></div>
+          <div class="campo"><label for="presLinea">Línea destino</label><select id="presLinea"></select></div>
+        </div>
+        <div class="campo"><label for="presOperador">Nombre del operador</label><input id="presOperador" maxlength="50" placeholder="Nombre y apellido"></div>
+        <div class="error-form" id="errorPrestamo"></div>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-borde" data-cerrar>Cancelar</button>
+        <button type="submit" class="btn btn-naranja">Confirmar préstamo</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal RF-07: Actualizar calibración -->
+  <div class="modal-fondo" id="modalCalib">
+    <form class="modal" id="formCalib" novalidate>
+      <div class="modal-cab">
+        <h3>Actualizar calibración</h3>
+        <button type="button" class="modal-cerrar" data-cerrar>&times;</button>
+      </div>
+      <div class="modal-cuerpo">
+        <div class="resumen-herr" id="calibResumen"></div>
+        <div class="campo"><label for="calibFecha">Nueva fecha de próxima calibración</label><input id="calibFecha" type="date"></div>
+        <div class="error-form" id="errorCalib"></div>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-borde" data-cerrar>Cancelar</button>
+        <button type="submit" class="btn btn-verde">Guardar certificado</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal: ficha de la herramienta (más acciones + historial para auditoría) -->
+  <div class="modal-fondo" id="modalFicha">
+    <div class="modal modal-ancho">
+      <div class="modal-cab">
+        <h3 id="fichaTitulo">Herramienta</h3>
+        <button type="button" class="modal-cerrar" data-cerrar>&times;</button>
+      </div>
+      <div class="modal-cuerpo">
+        <div class="ficha-datos" id="fichaDatos"></div>
+        <div class="ficha-acciones" id="fichaAcciones"></div>
+        <h4 class="ficha-sub">Historial de vigencia y préstamos</h4>
+        <div class="tabla-envoltura ficha-historial">
+          <table class="tabla-movil">
+            <thead><tr><th>Fecha</th><th>Movimiento</th><th>Detalle</th><th>Usuario</th></tr></thead>
+            <tbody id="fichaHistorial"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-borde" id="btnExportFicha">Exportar historial (CSV)</button>
+        <button type="button" class="btn btn-primario" data-cerrar>Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal genérico: acciones que requieren motivo u observación -->
+  <div class="modal-fondo" id="modalMotivo">
+    <form class="modal" id="formMotivo" novalidate>
+      <div class="modal-cab">
+        <h3 id="motivoTitulo">Confirmar</h3>
+        <button type="button" class="modal-cerrar" data-cerrar>&times;</button>
+      </div>
+      <div class="modal-cuerpo">
+        <div class="resumen-herr" id="motivoResumen"></div>
+        <div class="campo"><label for="motivoTexto" id="motivoEtiqueta">Motivo</label><textarea id="motivoTexto" rows="3" maxlength="200"></textarea></div>
+        <div class="error-form" id="errorMotivo"></div>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-borde" data-cerrar>Cancelar</button>
+        <button type="submit" class="btn btn-primario" id="motivoConfirmar">Confirmar</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="aviso" id="aviso"></div>
+
+  <script src="js/datos.js"></script>
+  <script src="js/sesion.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

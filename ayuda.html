@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1f3a5f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="TorqueStock">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23e2662f%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-size=%2738%27 font-family=%27Arial%27 font-weight=%27bold%27 fill=%27white%27 text-anchor=%27middle%27%3ET%3C/text%3E%3C/svg%3E">
+  <title>TorqueStock — Manual de usuario</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="barra-sup">
+    <div class="marca">
+      <div class="icono">T</div>
+      <div>TorqueStock <small>Manual de usuario</small></div>
+    </div>
+    <div class="usuario-info">
+      <a class="btn btn-borde btn-sm" id="btnVolver" href="index.html">← Volver</a>
+    </div>
+  </header>
+
+  <div class="contenedor manual">
+    <!-- Índice -->
+    <nav class="panel manual-indice">
+      <div class="panel-cab"><h2>Contenido</h2></div>
+      <ol>
+        <li><a href="#intro">¿Qué es TorqueStock?</a></li>
+        <li><a href="#roles">Usuarios y permisos</a></li>
+        <li><a href="#login">Iniciar y cerrar sesión</a></li>
+        <li><a href="#panel">Pantalla principal</a></li>
+        <li><a href="#buscar">Buscar y filtrar herramientas</a></li>
+        <li><a href="#semaforo">Semáforo de calibración</a></li>
+        <li><a href="#prestar">Prestar una herramienta</a></li>
+        <li><a href="#devolver">Recibir una devolución</a></li>
+        <li><a href="#alta">Dar de alta una herramienta</a></li>
+        <li><a href="#calibrar">Actualizar una calibración</a></li>
+        <li><a href="#turno">Préstamos que exceden el turno</a></li>
+        <li><a href="#ficha">Ficha e historial de herramienta</a></li>
+        <li><a href="#reparacion">Reparación y reincorporación</a></li>
+        <li><a href="#extravio">Extravíos y bajas</a></li>
+        <li><a href="#bitacora">Movimientos recientes</a></li>
+        <li><a href="#reportes">Reportes y auditoría</a></li>
+        <li><a href="#problemas">Problemas frecuentes</a></li>
+      </ol>
+    </nav>
+
+    <main class="manual-contenido">
+      <section class="panel" id="intro">
+        <div class="panel-cab"><h2>1. ¿Qué es TorqueStock?</h2></div>
+        <div class="panel-cuerpo">
+          <p>TorqueStock es el sistema web del <strong>Almacén de Herramientas de Torque</strong> de Grupo Industrial Par-Tec.
+          Sustituye las libretas de papel y los archivos de Excel para:</p>
+          <ul>
+            <li>Saber en todo momento qué herramientas hay, cuáles están prestadas y a quién.</li>
+            <li>Impedir que se preste una herramienta con la calibración vencida (IATF 16949 / ISO 6789).</li>
+            <li>Registrar préstamos y devoluciones en segundos.</li>
+          </ul>
+          <p>Funciona en Chrome, Edge o Firefox y no necesita instalar nada.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="roles">
+        <div class="panel-cab"><h2>2. Usuarios y permisos</h2></div>
+        <div class="panel-cuerpo">
+          <p>Cada persona entra con su usuario. Lo que puede hacer depende de su rol:</p>
+          <div class="tabla-envoltura">
+            <table>
+              <thead><tr><th>Rol</th><th>Consultar / historial</th><th>Prestar / Devolver</th><th>Alta</th><th>Calibración</th><th>Reincorporar</th><th>Reparación, extravío y baja</th><th>Reportes</th></tr></thead>
+              <tbody>
+                <tr data-rol="Administrador"><td><strong>Jefe de almacén</strong> (Administrador)</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+                <tr data-rol="Almacenista"><td><strong>Almacenista</strong> de ventanilla</td><td>✔</td><td>✔</td><td>—</td><td>—</td><td>✔</td><td>—</td><td>—</td></tr>
+                <tr data-rol="Calidad"><td><strong>Ingeniero de calidad</strong></td><td>✔</td><td>—</td><td>—</td><td>✔</td><td>—</td><td>—</td><td>✔</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="nota">Si no ves un botón que se menciona en este manual, es porque tu rol no tiene ese permiso.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="login">
+        <div class="panel-cab"><h2>3. Iniciar y cerrar sesión</h2></div>
+        <div class="panel-cuerpo">
+          <ol class="pasos">
+            <li>Escribe tu <strong>Usuario</strong> y presiona <kbd>Enter</kbd>: el cursor pasa a Contraseña.</li>
+            <li>Escribe tu <strong>Contraseña</strong> y presiona <kbd>Enter</kbd> (o el botón <em>Iniciar sesión</em>).</li>
+          </ol>
+          <p><strong>Reglas de los campos:</strong> máximo <strong>15 caracteres</strong>, solo <strong>letras y números</strong>
+          (sin espacios, acentos, ñ ni símbolos). El contador debajo de cada campo indica cuántos llevas (por ejemplo, <em>4/15</em>).</p>
+          <p>Para salir, usa <strong>Cerrar sesión</strong> en la esquina superior derecha. Ciérrala siempre al terminar tu turno.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="panel">
+        <div class="panel-cab"><h2>4. Pantalla principal</h2></div>
+        <div class="panel-cuerpo">
+          <p>Al entrar verás tres zonas:</p>
+          <ul>
+            <li><strong>Tarjetas de resumen</strong> (arriba): Total de herramientas, Disponibles, En préstamo, Calibración vencida,
+              En reparación y Extraviadas. Se actualizan solas. <em>Haz clic en una tarjeta</em> para ver solo esas herramientas en la tabla.</li>
+            <li><strong>Alerta roja</strong> (si aplica): avisa cuando un préstamo lleva más de 8 horas sin devolverse.</li>
+            <li><strong>Inventario de herramientas</strong> (centro): la tabla con todas las herramientas, su calibración y estado.
+              Cada fila tiene el <em>botón principal</em> (Prestar, Devolver, Reincorporar o Calibración, según el caso) y el botón <strong>⋯ Ficha</strong> con el resto de acciones.</li>
+            <li><strong>Movimientos recientes</strong> (derecha): historial de préstamos, devoluciones, altas y recalibraciones.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="panel" id="buscar">
+        <div class="panel-cab"><h2>5. Buscar y filtrar herramientas</h2></div>
+        <div class="panel-cuerpo">
+          <p>Escribe en la barra de búsqueda y la tabla se filtra al instante. Puedes buscar por:</p>
+          <ul>
+            <li>Código (ej. <em>TQ-003</em>), nombre o marca (ej. <em>Norbar</em>), categoría (ej. <em>digital</em>).</li>
+            <li>Nombre o número del operador que la tiene, o la línea (ej. <em>Línea 2</em>).</li>
+          </ul>
+          <p>Los botones de filtro muestran: <strong>Todas</strong>, <strong>Disponible</strong>, <strong>En préstamo</strong>,
+          <strong>Excede turno</strong>, <strong>Por vencer</strong>, <strong>Calibración vencida</strong>,
+          <strong>En reparación</strong>, <strong>Extraviadas</strong> y <strong>Bajas</strong> (las herramientas dadas de baja solo aparecen en este filtro). Puedes combinar filtro y búsqueda.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="semaforo">
+        <div class="panel-cab"><h2>6. Semáforo de calibración</h2></div>
+        <div class="panel-cuerpo">
+          <p>La columna <strong>Calibración</strong> muestra el color según la fecha de próxima calibración:</p>
+          <ul class="lista-semaforo">
+            <li><span class="etiqueta sem-verde">Vigente</span> Faltan más de 15 días. Se puede prestar.</li>
+            <li><span class="etiqueta sem-amarillo">Por vencer</span> Vence en 15 días o menos. Se puede prestar, pero avisa a Calidad para programar la calibración.</li>
+            <li><span class="etiqueta sem-rojo">Vencida</span> Ya pasó la fecha. <strong>El botón Prestar se bloquea</strong> y la herramienta no puede salir del almacén hasta recalibrarse.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="panel" id="prestar">
+        <div class="panel-cab"><h2>7. Prestar una herramienta</h2></div>
+        <div class="panel-cuerpo">
+          <p class="rol-chip">Almacenista · Jefe de almacén</p>
+          <ol class="pasos">
+            <li>Busca la herramienta y haz clic en <span class="btn btn-naranja btn-sm">Prestar</span>.</li>
+            <li>Captura el <strong>No. de empleado</strong>, la <strong>Línea destino</strong> y el <strong>Nombre del operador</strong>.</li>
+            <li>Haz clic en <strong>Confirmar préstamo</strong>.</li>
+          </ol>
+          <p>La herramienta cambia a <span class="etiqueta est-prestamo">En préstamo</span> y queda registrado quién la tiene y en qué línea.</p>
+          <p class="nota">Si el botón Prestar aparece deshabilitado, la calibración está vencida: no entregues la herramienta.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="devolver">
+        <div class="panel-cab"><h2>8. Recibir una devolución</h2></div>
+        <div class="panel-cuerpo">
+          <p class="rol-chip">Almacenista · Jefe de almacén</p>
+          <ol class="pasos">
+            <li>Revisa físicamente que la herramienta venga completa y sin daños.</li>
+            <li>Búscala (por código o por el nombre del operador) y haz clic en <span class="btn btn-verde btn-sm">Devolver</span>.</li>
+          </ol>
+          <p>Con un solo clic regresa a <span class="etiqueta est-disponible">Disponible</span> y se guarda en el historial.</p>
+          <p><strong>Si la inspección encuentra daño:</strong> en lugar de Devolver, abre <strong>⋯ Ficha → Devolver con daño</strong>,
+          describe el daño y confirma. La herramienta pasa a <span class="etiqueta est-reparacion">En reparación</span> y el daño queda ligado al operador que la tenía.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="alta">
+        <div class="panel-cab"><h2>9. Dar de alta una herramienta</h2></div>
+        <div class="panel-cuerpo">
+          <p class="rol-chip">Jefe de almacén</p>
+          <ol class="pasos">
+            <li>Haz clic en <span class="btn btn-primario btn-sm">+ Nueva herramienta</span>.</li>
+            <li>Llena todos los campos: Código/ID, Categoría, Nombre, Torque mínimo y máximo (Nm) y Fecha de próxima calibración.</li>
+            <li>Haz clic en <strong>Guardar</strong>.</li>
+          </ol>
+          <p>El sistema no guarda si: falta algún campo (se marca en rojo), el código ya existe, o el torque mínimo no es menor que el máximo.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="calibrar">
+        <div class="panel-cab"><h2>10. Actualizar una calibración</h2></div>
+        <div class="panel-cuerpo">
+          <p class="rol-chip">Ingeniero de calidad · Jefe de almacén</p>
+          <ol class="pasos">
+            <li>Cuando el laboratorio entregue el certificado, busca la herramienta y haz clic en <span class="btn btn-borde btn-sm">Calibración</span>.</li>
+            <li>Elige la <strong>nueva fecha de próxima calibración</strong> (el sistema sugiere 6 meses; debe ser posterior a hoy).</li>
+            <li>Haz clic en <strong>Guardar certificado</strong>.</li>
+          </ol>
+          <p>La etiqueta vuelve a <span class="etiqueta sem-verde">Vigente</span> y la herramienta se puede prestar de nuevo.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="turno">
+        <div class="panel-cab"><h2>11. Préstamos que exceden el turno</h2></div>
+        <div class="panel-cuerpo">
+          <p>Si una herramienta lleva más de <strong>8 horas</strong> prestada, el sistema:</p>
+          <ul>
+            <li>Muestra una <strong>alerta roja</strong> arriba de la tabla (haz clic en ella para ver cuáles son).</li>
+            <li>Marca la fila en rojo con la leyenda <span class="texto-rojo">EXCEDE TURNO</span> y el tiempo transcurrido.</li>
+          </ul>
+          <p>Localiza al operador responsable que aparece en la fila. Si la herramienta no aparece, el Jefe de almacén debe reportarla como extraviada.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="ficha">
+        <div class="panel-cab"><h2>12. Ficha e historial de herramienta</h2></div>
+        <div class="panel-cuerpo">
+          <p class="rol-chip">Todos los roles</p>
+          <p>El botón <span class="btn btn-borde btn-sm">⋯ Ficha</span> abre los datos de la herramienta con:</p>
+          <ul>
+            <li>Todas las acciones que tu rol puede hacer en ese momento.</li>
+            <li>El <strong>historial completo</strong>: préstamos, devoluciones, recalibraciones, reparaciones y extravíos.</li>
+            <li><strong>Exportar historial (CSV)</strong>: descarga un archivo que se abre en Excel, listo para mostrar en una auditoría.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="panel" id="reparacion">
+        <div class="panel-cab"><h2>13. Reparación y reincorporación</h2></div>
+        <div class="panel-cuerpo">
+          <p class="rol-chip">Enviar: Jefe de almacén · Reincorporar: Almacenista y Jefe de almacén</p>
+          <ol class="pasos">
+            <li>Para enviar una herramienta disponible a mantenimiento o taller externo: <strong>⋯ Ficha → Enviar a reparación</strong>, escribe el motivo y confirma.</li>
+            <li>Mientras esté <span class="etiqueta est-reparacion">En reparación</span> no se puede prestar.</li>
+            <li>Cuando el técnico de mantenimiento la entregue reparada, haz clic en <span class="btn btn-verde btn-sm">Reincorporar</span>: vuelve a <span class="etiqueta est-disponible">Disponible</span>.</li>
+          </ol>
+          <p class="nota">Si la reparación afectó la calibración, pide a Calidad que actualice la fecha antes de prestarla.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="extravio">
+        <div class="panel-cab"><h2>14. Extravíos y bajas</h2></div>
+        <div class="panel-cuerpo">
+          <p class="rol-chip">Jefe de almacén</p>
+          <p><strong>Reportar extravío:</strong> en una herramienta prestada que no fue devuelta, abre <strong>⋯ Ficha → Reportar extravío</strong> y escribe una observación.
+          Queda como <span class="etiqueta est-extraviada">Extraviada</span> y conserva el nombre y número del operador responsable.
+          Si aparece después, usa <span class="btn btn-verde btn-sm">Localizada</span> para regresarla a disponible.</p>
+          <p><strong>Baja definitiva:</strong> para herramientas irreparables o perdidas, <strong>⋯ Ficha → Dar de baja</strong> con el motivo.
+          Sale del inventario activo y solo se ve en el filtro <strong>Bajas</strong>; su historial se conserva.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="bitacora">
+        <div class="panel-cab"><h2>15. Movimientos recientes</h2></div>
+        <div class="panel-cuerpo">
+          <p>Cada acción queda registrada con fecha, hora y usuario que la hizo:</p>
+          <ul>
+            <li><span class="mov-Préstamo"><strong>Préstamo</strong></span>: quién se llevó la herramienta y a qué línea.</li>
+            <li><span class="mov-Devolución"><strong>Devolución</strong></span>: de quién se recibió.</li>
+            <li><span class="mov-Alta"><strong>Alta</strong></span>: herramienta nueva registrada.</li>
+            <li><span class="mov-Recalibración"><strong>Recalibración</strong></span>: fecha anterior y nueva fecha de vigencia.</li>
+            <li><span class="mov-Reparación"><strong>Reparación</strong></span> / <span class="mov-Reincorporación"><strong>Reincorporación</strong></span>: salida y regreso de mantenimiento.</li>
+            <li><span class="mov-Extravío"><strong>Extravío</strong></span> / <span class="mov-Baja"><strong>Baja</strong></span>: con responsable o motivo.</li>
+          </ul>
+          <p>Úsalo en auditorías IATF 16949 / ISO 9001 para mostrar la trazabilidad de cada herramienta.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="reportes">
+        <div class="panel-cab"><h2>16. Reportes y auditoría</h2></div>
+        <div class="panel-cuerpo">
+          <p class="rol-chip">Jefe de almacén · Ingeniero de calidad</p>
+          <p>El botón <strong>Reportes</strong> de la barra superior abre una página con:</p>
+          <ul>
+            <li>Resumen del almacén y gráficas de <strong>herramientas más prestadas</strong>, <strong>préstamos por línea</strong> y <strong>operadores con más préstamos</strong>.</li>
+            <li><strong>Agenda de calibración</strong>: herramientas vencidas y por vencer, ordenadas por fecha.</li>
+            <li><strong>Responsables pendientes</strong>: extravíos y préstamos que exceden el turno.</li>
+            <li><strong>Bitácora completa</strong> con filtros por texto, tipo de movimiento y rango de fechas.</li>
+          </ul>
+          <p>Exporta a Excel con los botones <strong>CSV</strong> (inventario, agenda y movimientos) o usa <strong>Imprimir / PDF</strong> para entregar el reporte en auditoría.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="problemas">
+        <div class="panel-cab"><h2>17. Problemas frecuentes</h2></div>
+        <div class="panel-cuerpo">
+          <dl class="faq">
+            <dt>No me deja escribir un carácter en el login.</dt>
+            <dd>Solo se aceptan letras y números, máximo 15. Quita espacios, acentos, ñ y símbolos.</dd>
+            <dt>"Usuario o contraseña incorrectos".</dt>
+            <dd>Revisa que no tengas activadas las mayúsculas en la contraseña. Si persiste, pide al Jefe de almacén que verifique tu usuario.</dd>
+            <dt>El botón Prestar está gris.</dt>
+            <dd>La herramienta tiene la calibración vencida. Envíala a Calidad para recalibrar.</dd>
+            <dt>No veo el botón "+ Nueva herramienta" o "Calibración".</dt>
+            <dd>Tu rol no tiene ese permiso (ver sección 2).</dd>
+            <dt>La página me regresa al login.</dt>
+            <dd>La sesión se cierra al cerrar el navegador. Vuelve a iniciar sesión.</dd>
+            <dt>No encuentro una herramienta en la tabla.</dt>
+            <dd>Revisa que el filtro esté en "Todas" y borra la búsqueda. Si fue dada de baja, búscala en el filtro "Bajas".</dd>
+            <dt>Una herramienta no se puede prestar y no está vencida.</dt>
+            <dd>Revisa su estado: si está En reparación o Extraviada debe reincorporarse primero.</dd>
+            <dt>Los datos no aparecen en otra computadora.</dt>
+            <dd>En esta versión los datos se guardan en el navegador del equipo donde se capturan. Usa siempre la computadora de ventanilla.</dd>
+          </dl>
+        </div>
+      </section>
+
+      <p class="manual-pie"><a href="acerca.html">Acerca del proyecto</a> · TorqueStock · Grupo Industrial Par-Tec · PIA FACPYA UANL · Equipo OOZMA KAPPA</p>
+    </main>
+  </div>
+
+  <script src="js/sesion.js"></script>
+  <script>
+    // Si hay sesión, "Volver" regresa al panel y se resalta el rol del usuario
+    const u = Sesion.actual();
+    if (u) {
+      document.getElementById("btnVolver").href = "panel.html";
+      document.getElementById("btnVolver").textContent = "← Volver al panel";
+      const fila = document.querySelector(`tr[data-rol="${u.rol}"]`);
+      if (fila) fila.classList.add("mi-rol");
+    }
+  </script>
+</body>
+</html>
