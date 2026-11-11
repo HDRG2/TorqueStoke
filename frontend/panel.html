@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="TorqueStock">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23e2662f%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-size=%2738%27 font-family=%27Arial%27 font-weight=%27bold%27 fill=%27white%27 text-anchor=%27middle%27%3ET%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="img/logo.svg">
   <title>TorqueStock — Panel</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
@@ -16,18 +16,31 @@
 <body>
   <!-- Barra superior -->
   <header class="barra-sup">
+  <div class="barra-contenido">
     <div class="marca">
-      <div class="icono">T</div>
-      <div>TorqueStock <small>Grupo Industrial Par-Tec</small></div>
+      <img class="logo" src="img/logo.svg" alt="" width="38" height="38">
+      <div class="marca-texto">
+        <strong>TorqueStock</strong>
+        <small>Grupo Industrial Par-Tec</small>
+      </div>
     </div>
-    <nav class="usuario-info">
-      <span class="nombre" id="nombreUsuario"></span>
-      <span class="rol" id="rolUsuario"></span>
-      <a class="btn btn-borde btn-sm oculto" id="lnkReportes" href="reportes.html">Reportes</a>
-      <a class="btn btn-borde btn-sm" href="ayuda.html">? Ayuda</a>
-      <a class="btn btn-borde btn-sm" href="acerca.html">Acerca</a>
-      <button class="btn btn-borde btn-sm" id="btnSalir">Cerrar sesión</button>
+    <nav class="usuario-info" aria-label="Menú principal">
+      <div class="nav-enlaces">
+        <a class="nav-enlace oculto" id="lnkReportes" href="reportes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16M7 16v-5M12 16V6M17 16v-8"/></svg><span>Reportes</span></a>
+        <a class="nav-enlace" href="ayuda.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 0 1 4.8.8c0 1.7-2.4 2.2-2.4 3.7"/><path d="M12 17h.01"/></svg><span>Ayuda</span></a>
+        <a class="nav-enlace" href="acerca.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></svg><span>Acerca</span></a>
+      </div>
+      <span class="separador-v" aria-hidden="true"></span>
+      <div class="usuario-bloque">
+        <span class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+        <div class="usuario-textos">
+          <span class="nombre" id="nombreUsuario"></span>
+          <span class="rol" id="rolUsuario"></span>
+        </div>
+      </div>
+      <button class="nav-enlace salir" id="btnSalir" title="Cerrar sesión"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/><path d="M16 17l5-5-5-5M21 12H9"/></svg><span>Salir</span></button>
     </nav>
+  </div>
   </header>
 
   <div class="contenedor">

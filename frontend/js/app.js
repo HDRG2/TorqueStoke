@@ -46,7 +46,7 @@ const resumenHerr = (h) =>
 
 // ---------- Encabezado ----------
 $("nombreUsuario").textContent = usuario.nombre;
-$("rolUsuario").textContent = usuario.rol;
+$("rolUsuario").textContent = NOMBRE_ROL[usuario.rol] || usuario.rol;
 $("btnSalir").onclick = () => Sesion.cerrar();
 if (puede.alta) $("btnNueva").classList.remove("oculto");
 if (puede.restablecer) $("btnRestablecer").classList.remove("oculto");

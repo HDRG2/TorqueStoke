@@ -13,7 +13,7 @@ if (!DB.permisos(usuario.rol).reportes) {
 const E = DB.ESTADOS;
 
 $("nombreUsuario").textContent = usuario.nombre;
-$("rolUsuario").textContent = usuario.rol;
+$("rolUsuario").textContent = NOMBRE_ROL[usuario.rol] || usuario.rol;
 $("btnSalir").onclick = () => Sesion.cerrar();
 $("fechaReporte").textContent = new Date().toLocaleString("es-MX", { dateStyle: "long", timeStyle: "short" });
 $("usuarioReporte").textContent = `${usuario.nombre} (${usuario.rol})`;

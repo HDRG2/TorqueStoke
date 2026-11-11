@@ -7,6 +7,9 @@ const $ = (id) => document.getElementById(id);
 const escapar = (t) => String(t ?? "").replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+// Nombre del rol para mostrar en pantalla
+const NOMBRE_ROL = { Administrador: "Jefe de almacén", Almacenista: "Almacenista", Calidad: "Ingeniero de calidad" };
+
 // Texto para buscar: sin acentos, sin mayúsculas y con espacios simples ("Línea  2" → "linea 2")
 const normalizar = (t) => String(t ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "")
   .toLowerCase().replace(/\s+/g, " ").trim();

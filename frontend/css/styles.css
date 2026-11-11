@@ -80,10 +80,7 @@ button, input, select { font: inherit; }
   padding: 32px 28px; box-shadow: 0 20px 50px rgba(0, 0, 0, .3);
 }
 .login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-.login-logo .icono {
-  width: 42px; height: 42px; border-radius: 10px; background: var(--naranja);
-  display: grid; place-items: center; color: #fff; font-size: 22px; font-weight: 800;
-}
+.login-logo .logo { width: 46px; height: 46px; display: block; flex-shrink: 0; }
 .login-logo h1 { font-size: 24px; color: var(--azul); }
 .login-sub { color: var(--gris-texto); margin: 0 0 22px; font-size: 13px; }
 .login-demo {
@@ -94,22 +91,44 @@ button, input, select { font: inherit; }
 
 /* ---------- Estructura principal ---------- */
 .barra-sup {
-  background: var(--azul); color: #fff;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 22px; height: 60px; position: sticky; top: 0; z-index: 10;
+  background: var(--azul); color: #fff; position: sticky; top: 0; z-index: 10;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .18);
 }
-.marca { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 700; }
-.marca .icono {
-  width: 32px; height: 32px; border-radius: 8px; background: var(--naranja);
-  display: grid; place-items: center; font-weight: 800;
+/* Mismo ancho que el contenido de la página, para que todo quede alineado */
+.barra-contenido {
+  max-width: 1280px; margin: 0 auto; padding: 0 22px; height: 66px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
 }
-.marca small { font-weight: 400; opacity: .7; font-size: 12px; }
-.usuario-info { display: flex; align-items: center; gap: 12px; font-size: 13px; }
-.usuario-info .rol {
-  background: rgba(255, 255, 255, .15); padding: 3px 9px; border-radius: 20px; font-size: 12px;
+.marca { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.marca .logo { width: 38px; height: 38px; display: block; flex-shrink: 0; }
+.marca-texto { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.marca-texto strong { font-size: 19px; font-weight: 700; letter-spacing: .2px; }
+.marca-texto small { font-size: 12px; opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.usuario-info { display: flex; align-items: center; gap: 4px; }
+.nav-enlaces { display: flex; align-items: center; gap: 2px; }
+.nav-enlace {
+  display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 8px;
+  background: none; border: 1px solid transparent; color: rgba(255, 255, 255, .82);
+  font: inherit; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: background .12s, color .12s;
 }
-.usuario-info .btn-borde { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .4); }
-.usuario-info .btn-borde:hover { background: rgba(255, 255, 255, .1); }
+.nav-enlace:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+.nav-enlace:focus-visible { outline: 2px solid #ffb48a; outline-offset: 1px; }
+.nav-enlace svg { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-enlace.salir { border-color: rgba(255, 255, 255, .28); margin-left: 6px; }
+.nav-enlace.salir:hover { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .5); }
+.separador-v { width: 1px; height: 30px; background: rgba(255, 255, 255, .2); margin: 0 12px; }
+
+.usuario-bloque { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;
+  background: rgba(255, 255, 255, .14); color: #fff;
+}
+.avatar svg { width: 19px; height: 19px; }
+.usuario-textos { display: flex; flex-direction: column; line-height: 1.2; }
+.usuario-textos .nombre { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.usuario-textos .rol { font-size: 12px; color: #ffb48a; white-space: nowrap; }
 
 .contenedor { max-width: 1280px; margin: 0 auto; padding: 22px; }
 
@@ -223,8 +242,6 @@ td .sub { display: block; font-size: 12px; color: var(--gris-texto); }
 @media (max-width: 760px) {
   .kpis { grid-template-columns: repeat(2, 1fr); }
   .contenedor { padding: 14px; }
-  .barra-sup { padding: 0 14px; }
-  .marca small, .usuario-info .nombre { display: none; }
   .fila-campos { grid-template-columns: 1fr; }
   th, td { padding: 9px 10px; }
 }
@@ -352,12 +369,30 @@ td.m-titulo { display: none; }
   /* iOS no hace zoom si los campos miden 16px */
   input, select, textarea, .buscador { font-size: 16px !important; }
 
-  /* Barra superior en dos renglones */
-  .barra-sup { height: auto; flex-wrap: wrap; gap: 8px; padding: 10px 12px calc(10px) 12px; padding-top: max(10px, env(safe-area-inset-top)); }
-  .marca { font-size: 17px; }
-  .usuario-info { width: 100%; flex-wrap: wrap; gap: 6px; }
-  .usuario-info .btn { flex-shrink: 0; }
-  .usuario-info .rol { flex-shrink: 0; }
+  /* Barra superior: logo y usuario arriba; menú abajo */
+  .barra-contenido {
+    height: auto; flex-wrap: wrap; gap: 6px 10px;
+    padding: max(10px, env(safe-area-inset-top)) 12px 8px;
+  }
+  .marca { flex: 1 1 auto; }
+  .marca .logo { width: 34px; height: 34px; }
+  .marca-texto strong { font-size: 17px; }
+  .usuario-info { display: contents; }               /* sus partes se acomodan en la barra */
+  .separador-v { display: none; }
+  .usuario-bloque { order: 1; gap: 8px; }
+  .usuario-textos .nombre { display: none; }
+  .avatar { width: 30px; height: 30px; }
+  .avatar svg { width: 16px; height: 16px; }
+  .nav-enlace.salir { order: 2; margin-left: 0; padding: 7px 9px; }
+  .nav-enlace.salir span { display: none; }          /* solo el ícono; el título dice "Cerrar sesión" */
+  .marca-texto small { display: none; }
+  .nav-enlaces { order: 3; }
+  /* Con usuario (panel y reportes) el menú baja a su propio renglón */
+  .usuario-info:has(.usuario-bloque) .nav-enlaces {
+    width: 100%; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, .14);
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .nav-enlace { padding: 7px 10px; font-size: 13px; }
 
   .contenedor { padding: 12px; }
   .kpi { padding: 12px 14px; }
