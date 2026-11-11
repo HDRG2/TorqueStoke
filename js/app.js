@@ -1,9 +1,12 @@
 /* =========================================================
    TorqueStock — Lógica de la interfaz del panel
+   Se carga como módulo para poder esperar a que lleguen los
+   datos de los archivos JSON antes de pintar la pantalla.
    ========================================================= */
 
 const usuario = Sesion.exigir();
 if (!usuario) throw new Error("Sin sesión activa");
+await DB.listo;
 const puede = DB.permisos(usuario.rol);
 const E = DB.ESTADOS;
 

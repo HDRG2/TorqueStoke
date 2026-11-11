@@ -5,6 +5,7 @@
 
 const usuario = Sesion.exigir();
 if (!usuario) throw new Error("Sin sesión activa");
+await DB.listo;   // espera los datos de los archivos JSON (se carga como módulo)
 if (!DB.permisos(usuario.rol).reportes) {
   window.location.replace("panel.html");
   throw new Error("Sin permiso para reportes");

@@ -1,0 +1,12 @@
+{
+  "usuarios": [
+    { "usuario": "jefe",    "clave": "jefe123",    "nombre": "Jefe de Almacén",     "rol": "Administrador" },
+    { "usuario": "almacen", "clave": "almacen123", "nombre": "Almacenista Turno 1", "rol": "Almacenista" },
+    { "usuario": "calidad", "clave": "calidad123", "nombre": "Ing. de Calidad",     "rol": "Calidad" }
+  ],
+  "permisos": {
+    "Administrador": { "alta": true,  "prestar": true,  "calibrar": true,  "reparar": true,  "reincorporar": true,  "baja": true,  "reportes": true,  "restablecer": true },
+    "Almacenista":   { "alta": false, "prestar": true,  "calibrar": false, "reparar": false, "reincorporar": true,  "baja": false, "reportes": false, "restablecer": false },
+    "Calidad":       { "alta": false, "prestar": false, "calibrar": true,  "reparar": false, "reincorporar": false, "baja": false, "reportes": true,  "restablecer": false }
+  }
+}

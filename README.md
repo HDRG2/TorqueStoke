@@ -5,13 +5,13 @@ PIA · Lic. en Tecnologías de Información · FACPYA UANL · Equipo OOZMA KAPPA
 
 ## Cómo ejecutarlo
 
-En la terminal de VS Code, dentro de la carpeta del proyecto:
+Los datos iniciales vienen de archivos JSON, y el navegador solo los puede leer si la app se abre **desde un servidor**. Con doble clic en `index.html` aparece un aviso. Ábrela de alguna de estas formas:
 
-```powershell
-start msedge "$PWD\index.html"
-```
+- Doble clic en `Iniciar servidor.bat` (ver *Uso sin internet*).
+- En VS Code, abre `index.html` y haz clic en **Go Live**.
+- El link de GitHub Pages: `https://hdrg2.github.io/TorqueStoke/`.
 
-o abre `index.html` y haz clic en **Go Live**. No requiere instalar nada ni internet.
+No requiere instalar nada ni internet.
 
 | Rol | Usuario | Contraseña |
 |---|---|---|
@@ -19,7 +19,20 @@ o abre `index.html` y haz clic en **Go Live**. No requiere instalar nada ni inte
 | Almacenista de ventanilla | `almacen` | `almacen123` |
 | Ingeniero de calidad | `calidad` | `calidad123` |
 
-Los datos se guardan en el navegador (LocalStorage). El Jefe de almacén puede usar **Restablecer demo** para volver a los datos de ejemplo.
+Los cambios que haces en la app se guardan en el navegador (LocalStorage). El Jefe de almacén puede usar **Restablecer demo** para volver a los datos de ejemplo.
+
+## Datos (carpeta `data/`)
+
+| Archivo | Contenido |
+|---|---|
+| `usuarios.json` | Usuarios, contraseñas y permisos por rol |
+| `catalogos.json` | Líneas de producción, categorías, días de aviso del semáforo (15) y horas del turno (8) |
+| `herramientas.json` | Inventario inicial |
+| `historial-demo.json` | Préstamos, devoluciones, recalibraciones y reparaciones de ejemplo |
+
+Las fechas son **relativas** para que la demo nunca se vea vieja: `"diasParaCalibracion": 9` significa "vence dentro de 9 días" y `"horasAtras": 2` significa "hace 2 horas"; un número negativo es una fecha que ya pasó.
+
+**Cómo aplicar cambios a los JSON:** el navegador conserva los datos que ya tenía guardados, así que, después de editar un archivo, entra como Jefe y presiona **Restablecer demo**. Los cambios a `usuarios.json` y `catalogos.json` se ven con solo recargar la página. Si usas la app instalada en el celular, sube también la `VERSION` de `sw.js`.
 
 ## Uso sin internet
 
@@ -43,7 +56,8 @@ reportes.html     Reportes de utilización, agenda de calibración, bitácora, C
 ayuda.html        Manual de usuario
 acerca.html       Ficha del proyecto, equipo y trazabilidad de requerimientos
 css/styles.css    Estilos, diseño responsivo (RNF-04) e impresión
-js/datos.js       Datos y reglas de negocio: semáforo, bloqueo, estados, permisos (RNF-05)
+data/*.json       Datos iniciales: usuarios, catálogos, inventario e historial de ejemplo
+js/datos.js       Carga de los JSON y reglas de negocio: semáforo, bloqueo, estados, permisos (RNF-05)
 js/sesion.js      Manejo de sesión
 js/util.js        Utilidades de interfaz (etiquetas, fechas, CSV)
 js/app.js         Lógica del panel

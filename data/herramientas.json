@@ -1,0 +1,16 @@
+[
+  { "codigo": "TQ-001", "nombre": "Llave de clic 3/8\" Norbar",         "categoria": "Llave dinamométrica de clic", "torqueMin": 20,  "torqueMax": 100,  "diasParaCalibracion": 120 },
+  { "codigo": "TQ-002", "nombre": "Llave de clic 1/2\" Tohnichi",       "categoria": "Llave dinamométrica de clic", "torqueMin": 40,  "torqueMax": 200,  "diasParaCalibracion": 75 },
+  { "codigo": "TQ-003", "nombre": "Torquímetro digital CDI 2503",       "categoria": "Torquímetro digital",         "torqueMin": 10,  "torqueMax": 340,  "diasParaCalibracion": 9 },
+  { "codigo": "TQ-004", "nombre": "Torquímetro digital Snap-on ATECH",  "categoria": "Torquímetro digital",         "torqueMin": 5,   "torqueMax": 135,  "diasParaCalibracion": 200 },
+  { "codigo": "TQ-005", "nombre": "Desarmador dinamométrico Wera",      "categoria": "Desarmador dinamométrico",    "torqueMin": 1,   "torqueMax": 5,    "diasParaCalibracion": -4 },
+  { "codigo": "TQ-006", "nombre": "Desarmador dinamométrico Wiha",      "categoria": "Desarmador dinamométrico",    "torqueMin": 0.5, "torqueMax": 3,    "diasParaCalibracion": 45 },
+  { "codigo": "TQ-007", "nombre": "Multiplicador de par Norbar HT",     "categoria": "Multiplicador de par",        "torqueMin": 300, "torqueMax": 1500, "diasParaCalibracion": 160 },
+  { "codigo": "TQ-008", "nombre": "Atornillador neumático Atlas Copco", "categoria": "Atornillador neumático",      "torqueMin": 8,   "torqueMax": 40,   "diasParaCalibracion": 13 },
+  { "codigo": "TQ-009", "nombre": "Llave de clic 3/4\" Proto",          "categoria": "Llave dinamométrica de clic", "torqueMin": 100, "torqueMax": 600,  "diasParaCalibracion": -20 },
+  { "codigo": "TQ-010", "nombre": "Torquímetro digital Stahlwille",     "categoria": "Torquímetro digital",         "torqueMin": 20,  "torqueMax": 400,  "diasParaCalibracion": 90 },
+  { "codigo": "TQ-011", "nombre": "Llave de clic 1/4\" Gedore",         "categoria": "Llave dinamométrica de clic", "torqueMin": 5,   "torqueMax": 25,   "diasParaCalibracion": 60 },
+  { "codigo": "TQ-012", "nombre": "Atornillador neumático Ingersoll",   "categoria": "Atornillador neumático",      "torqueMin": 10,  "torqueMax": 60,   "diasParaCalibracion": 30 },
+  { "codigo": "TQ-013", "nombre": "Llave de clic 1/2\" CDI",            "categoria": "Llave dinamométrica de clic", "torqueMin": 30,  "torqueMax": 150,  "diasParaCalibracion": 100 },
+  { "codigo": "TQ-014", "nombre": "Multiplicador de par Hytorc",        "categoria": "Multiplicador de par",        "torqueMin": 500, "torqueMax": 3000, "diasParaCalibracion": 140 }
+]

@@ -1,0 +1,33 @@
+{
+  "prestamosPasados": [
+    { "codigo": "TQ-001", "operador": "Carlos Treviño", "empleado": "30115", "linea": "Línea 1",       "horasAtras": 150, "horasPrestada": 7 },
+    { "codigo": "TQ-003", "operador": "María López",    "empleado": "41208", "linea": "Línea 3",       "horasAtras": 139, "horasPrestada": 7 },
+    { "codigo": "TQ-010", "operador": "José Garza",     "empleado": "28844", "linea": "Línea 4",       "horasAtras": 128, "horasPrestada": 7 },
+    { "codigo": "TQ-001", "operador": "Carlos Treviño", "empleado": "30115", "linea": "Línea 1",       "horasAtras": 117, "horasPrestada": 7 },
+    { "codigo": "TQ-004", "operador": "Ana Martínez",   "empleado": "20871", "linea": "Mantenimiento", "horasAtras": 106, "horasPrestada": 7 },
+    { "codigo": "TQ-011", "operador": "Pedro Ruiz",     "empleado": "15530", "linea": "Línea 5",       "horasAtras": 95,  "horasPrestada": 7 },
+    { "codigo": "TQ-003", "operador": "Luis Hernández", "empleado": "10452", "linea": "Línea 2",       "horasAtras": 84,  "horasPrestada": 7 },
+    { "codigo": "TQ-012", "operador": "María López",    "empleado": "41208", "linea": "Línea 3",       "horasAtras": 73,  "horasPrestada": 7 },
+    { "codigo": "TQ-001", "operador": "José Garza",     "empleado": "28844", "linea": "Línea 4",       "horasAtras": 62,  "horasPrestada": 7 },
+    { "codigo": "TQ-006", "operador": "Rosa Salinas",   "empleado": "33620", "linea": "Línea 6",       "horasAtras": 51,  "horasPrestada": 7 },
+    { "codigo": "TQ-010", "operador": "Carlos Treviño", "empleado": "30115", "linea": "Línea 1",       "horasAtras": 40,  "horasPrestada": 7 },
+    { "codigo": "TQ-013", "operador": "Pedro Ruiz",     "empleado": "15530", "linea": "Línea 5",       "horasAtras": 29,  "horasPrestada": 7 }
+  ],
+  "recalibraciones": [
+    { "codigo": "TQ-004", "horasAtras": 60, "vigenciaAnteriorDias": -2, "vigenciaNuevaDias": 200 }
+  ],
+  "prestamosActivos": [
+    { "codigo": "TQ-002", "operador": "Luis Hernández", "empleado": "10452", "linea": "Línea 2",       "horasAtras": 2 },
+    { "codigo": "TQ-007", "operador": "Ana Martínez",   "empleado": "20871", "linea": "Mantenimiento", "horasAtras": 1 },
+    { "codigo": "TQ-012", "operador": "Rosa Salinas",   "empleado": "33620", "linea": "Línea 6",       "horasAtras": 11 },
+    { "codigo": "TQ-013", "operador": "Pedro Ruiz",     "empleado": "15530", "linea": "Línea 5",       "horasAtras": 9 }
+  ],
+  "reparaciones": [
+    {
+      "codigo": "TQ-011", "horasAtras": 30,
+      "operador": "Pedro Ruiz", "empleado": "15530", "linea": "Línea 5",
+      "danio": "mecanismo de clic no dispara",
+      "nota": "Mecanismo de clic no dispara. Enviada a mantenimiento."
+    }
+  ]
+}

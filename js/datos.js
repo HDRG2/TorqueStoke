@@ -1,16 +1,21 @@
 /* =========================================================
    TorqueStock — Capa de datos y reglas de negocio
-   Persistencia local con LocalStorage (Sección 9 del PIA).
+   Los datos de arranque vienen de archivos JSON (carpeta data/):
+     usuarios.json        Usuarios y permisos por rol
+     catalogos.json       Líneas, categorías, días de aviso y horas de turno
+     herramientas.json    Inventario inicial
+     historial-demo.json  Movimientos de ejemplo
+   Los cambios que se hacen en la app se guardan en el navegador
+   (LocalStorage, Sección 9 del PIA).
    Toda la lógica (semáforo, bloqueo, préstamos, estados)
    vive aquí, separada de la vista (RNF-05: código modular).
    ========================================================= */
 
 const DB = (() => {
   const CLAVE = "torquestock_db_v3";
-  const DIAS_AVISO = 15;    // RF-06: amarillo = vence en 15 días o menos
-  const HORAS_TURNO = 8;    // Préstamo que excede un turno = no devuelto al cierre de jornada (Sección 1.2)
+  const ARCHIVOS = ["data/usuarios.json", "data/catalogos.json", "data/herramientas.json", "data/historial-demo.json"];
 
-  // Estados del ciclo de vida de una herramienta
+  // Estados del ciclo de vida de una herramienta (son parte de la lógica, no de los datos)
   const ESTADOS = {
     DISPONIBLE: "Disponible",
     PRESTAMO: "En préstamo",
@@ -18,28 +23,14 @@ const DB = (() => {
     BAJA: "Baja",
   };
 
-  // Usuarios por rol (Sección 8: clases de usuarios)
-  const USUARIOS = [
-    { usuario: "jefe",    clave: "jefe123",    nombre: "Jefe de Almacén",     rol: "Administrador" },
-    { usuario: "almacen", clave: "almacen123", nombre: "Almacenista Turno 1", rol: "Almacenista" },
-    { usuario: "calidad", clave: "calidad123", nombre: "Ing. de Calidad",     rol: "Calidad" },
-  ];
-
-  // Qué puede hacer cada rol (Secciones 1.2 y 8)
-  const PERMISOS = {
-    Administrador: { alta: true,  prestar: true,  calibrar: true,  reparar: true,  reincorporar: true,  baja: true,  reportes: true,  restablecer: true },
-    Almacenista:   { alta: false, prestar: true,  calibrar: false, reparar: false, reincorporar: true,  baja: false, reportes: false, restablecer: false },
-    Calidad:       { alta: false, prestar: false, calibrar: true,  reparar: false, reincorporar: false, baja: false, reportes: true,  restablecer: false },
-  };
-
-  const LINEAS = ["Línea 1", "Línea 2", "Línea 3", "Línea 4", "Línea 5", "Línea 6", "Mantenimiento"];
-  const CATEGORIAS = [
-    "Llave dinamométrica de clic",
-    "Torquímetro digital",
-    "Desarmador dinamométrico",
-    "Multiplicador de par",
-    "Atornillador neumático",
-  ];
+  // Se llenan al leer los archivos JSON
+  let USUARIOS = [];        // Sección 8: clases de usuarios
+  let PERMISOS = {};        // Qué puede hacer cada rol (Secciones 1.2 y 8)
+  let LINEAS = [];
+  let CATEGORIAS = [];
+  let DIAS_AVISO = 15;      // RF-06: amarillo = vence en estos días o menos
+  let HORAS_TURNO = 8;      // Préstamo que excede un turno = no devuelto al cierre de jornada (Sección 1.2)
+  let semilla = null;       // Inventario e historial de ejemplo, para "Restablecer demo"
 
   // ---------- Utilidades de fecha ----------
   const hoy = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
@@ -48,71 +39,109 @@ const DB = (() => {
   const parseFecha = (iso) => { const [a, m, d] = iso.split("-").map(Number); return new Date(a, m - 1, d); };
   const haceHoras = (h) => new Date(Date.now() - h * 3600000).toISOString();
 
-  // ---------- Datos de demostración ----------
+  // ---------- Datos de demostración (armados con los JSON) ----------
+  // Las fechas del JSON son relativas ("dentro de 120 días", "hace 9 horas"),
+  // así la demo siempre muestra herramientas en verde, amarillo y rojo.
   function datosIniciales() {
-    const h = (codigo, nombre, categoria, min, max, dias) => ({
-      codigo, nombre, categoria, torqueMin: min, torqueMax: max,
-      proximaCalibracion: sumarDias(dias), estado: ESTADOS.DISPONIBLE, prestamo: null, nota: "",
-    });
-    const herramientas = [
-      h("TQ-001", "Llave de clic 3/8\" Norbar",         CATEGORIAS[0], 20, 100, 120),
-      h("TQ-002", "Llave de clic 1/2\" Tohnichi",       CATEGORIAS[0], 40, 200, 75),
-      h("TQ-003", "Torquímetro digital CDI 2503",       CATEGORIAS[1], 10, 340, 9),
-      h("TQ-004", "Torquímetro digital Snap-on ATECH",  CATEGORIAS[1], 5, 135, 200),
-      h("TQ-005", "Desarmador dinamométrico Wera",      CATEGORIAS[2], 1, 5, -4),
-      h("TQ-006", "Desarmador dinamométrico Wiha",      CATEGORIAS[2], 0.5, 3, 45),
-      h("TQ-007", "Multiplicador de par Norbar HT",     CATEGORIAS[3], 300, 1500, 160),
-      h("TQ-008", "Atornillador neumático Atlas Copco", CATEGORIAS[4], 8, 40, 13),
-      h("TQ-009", "Llave de clic 3/4\" Proto",          CATEGORIAS[0], 100, 600, -20),
-      h("TQ-010", "Torquímetro digital Stahlwille",     CATEGORIAS[1], 20, 400, 90),
-      h("TQ-011", "Llave de clic 1/4\" Gedore",         CATEGORIAS[0], 5, 25, 60),
-      h("TQ-012", "Atornillador neumático Ingersoll",   CATEGORIAS[4], 10, 60, 30),
-      h("TQ-013", "Llave de clic 1/2\" CDI",            CATEGORIAS[0], 30, 150, 100),
-      h("TQ-014", "Multiplicador de par Hytorc",        CATEGORIAS[3], 500, 3000, 140),
-    ];
-    const buscarSeed = (c) => herramientas.find((x) => x.codigo === c);
+    const herramientas = semilla.herramientas.map((x) => ({
+      codigo: x.codigo, nombre: x.nombre, categoria: x.categoria, torqueMin: x.torqueMin, torqueMax: x.torqueMax,
+      proximaCalibracion: sumarDias(x.diasParaCalibracion), estado: ESTADOS.DISPONIBLE, prestamo: null, nota: "",
+    }));
+    const buscarSeed = (c) => {
+      const x = herramientas.find((y) => y.codigo === c);
+      if (!x) console.warn(`historial-demo.json menciona ${c}, que no está en herramientas.json`);
+      return x;
+    };
     const movs = [];
     const mov = (horas, tipo, codigo, detalle, usuario) =>
       movs.push({ fecha: haceHoras(horas), tipo, codigo, detalle, usuario });
+    const demo = semilla.demo;
 
     // Historial de los últimos días (para reportes y auditoría)
-    const historia = [
-      ["TQ-001", "Carlos Treviño", "30115", "Línea 1"], ["TQ-003", "María López", "41208", "Línea 3"],
-      ["TQ-010", "José Garza", "28844", "Línea 4"],    ["TQ-001", "Carlos Treviño", "30115", "Línea 1"],
-      ["TQ-004", "Ana Martínez", "20871", "Mantenimiento"], ["TQ-011", "Pedro Ruiz", "15530", "Línea 5"],
-      ["TQ-003", "Luis Hernández", "10452", "Línea 2"], ["TQ-012", "María López", "41208", "Línea 3"],
-      ["TQ-001", "José Garza", "28844", "Línea 4"],    ["TQ-006", "Rosa Salinas", "33620", "Línea 6"],
-      ["TQ-010", "Carlos Treviño", "30115", "Línea 1"], ["TQ-013", "Pedro Ruiz", "15530", "Línea 5"],
-    ];
-    historia.forEach(([codigo, op, emp, linea], i) => {
-      const inicio = 150 - i * 11;
-      mov(inicio, "Préstamo", codigo, `${op} (#${emp}) → ${linea}`, "almacen");
-      mov(inicio - 7, "Devolución", codigo, `Recibida de ${op} (#${emp}), ${linea}`, "almacen");
+    (demo.prestamosPasados || []).forEach((p) => {
+      mov(p.horasAtras, "Préstamo", p.codigo, `${p.operador} (#${p.empleado}) → ${p.linea}`, "almacen");
+      mov(p.horasAtras - p.horasPrestada, "Devolución", p.codigo, `Recibida de ${p.operador} (#${p.empleado}), ${p.linea}`, "almacen");
     });
-    mov(60, "Recalibración", "TQ-004", `Vigencia ${sumarDias(-2)} → ${sumarDias(200)}`, "calidad");
+    (demo.recalibraciones || []).forEach((r) =>
+      mov(r.horasAtras, "Recalibración", r.codigo, `Vigencia ${sumarDias(r.vigenciaAnteriorDias)} → ${sumarDias(r.vigenciaNuevaDias)}`, "calidad"));
 
-    // Estado actual de algunas herramientas
-    const prestar = (codigo, empleado, operador, linea, horas) => {
-      const x = buscarSeed(codigo);
+    // Estado actual: herramientas prestadas ahora mismo
+    (demo.prestamosActivos || []).forEach((p) => {
+      const x = buscarSeed(p.codigo);
+      if (!x) return;
       x.estado = ESTADOS.PRESTAMO;
-      x.prestamo = { empleado, operador, linea, fecha: haceHoras(horas) };
-      mov(horas, "Préstamo", codigo, `${operador} (#${empleado}) → ${linea}`, "almacen");
-    };
-    prestar("TQ-002", "10452", "Luis Hernández", "Línea 2", 2);
-    prestar("TQ-007", "20871", "Ana Martínez", "Mantenimiento", 1);
-    prestar("TQ-012", "33620", "Rosa Salinas", "Línea 6", 11);   // excede el turno
+      x.prestamo = { empleado: p.empleado, operador: p.operador, linea: p.linea, fecha: haceHoras(p.horasAtras) };
+      mov(p.horasAtras, "Préstamo", p.codigo, `${p.operador} (#${p.empleado}) → ${p.linea}`, "almacen");
+    });
 
-    const rep = buscarSeed("TQ-011");
-    rep.estado = ESTADOS.REPARACION;
-    rep.nota = "Mecanismo de clic no dispara. Enviada a mantenimiento.";
-    mov(30, "Devolución", "TQ-011", "Recibida de Pedro Ruiz (#15530), Línea 5 — CON DAÑO: mecanismo de clic no dispara", "almacen");
-    mov(30, "Reparación", "TQ-011", "Mecanismo de clic no dispara. Enviada a mantenimiento.", "almacen");
-
-    prestar("TQ-013", "15530", "Pedro Ruiz", "Línea 5", 9);    // excede el turno
+    // Estado actual: herramientas devueltas con daño y en reparación
+    (demo.reparaciones || []).forEach((r) => {
+      const x = buscarSeed(r.codigo);
+      if (!x) return;
+      x.estado = ESTADOS.REPARACION;
+      x.nota = r.nota;
+      mov(r.horasAtras, "Devolución", r.codigo, `Recibida de ${r.operador} (#${r.empleado}), ${r.linea} — CON DAÑO: ${r.danio}`, "almacen");
+      mov(r.horasAtras, "Reparación", r.codigo, r.nota, "almacen");
+    });
 
     movs.sort((a, b) => b.fecha.localeCompare(a.fecha));
     return { herramientas, movimientos: movs };
   }
+
+  // ---------- Lectura de los archivos JSON ----------
+  async function leerJSON(ruta) {
+    let r;
+    try { r = await fetch(ruta, { cache: "no-cache" }); }
+    catch (e) { throw new Error(`No se pudo leer ${ruta}.`); }
+    if (!r.ok) throw new Error(`No se encontró ${ruta} (error ${r.status}).`);
+    try { return await r.json(); }
+    catch (e) { throw new Error(`${ruta} tiene un error de formato (revisa comas, comillas y llaves).`); }
+  }
+
+  async function iniciar() {
+    // Abierta con doble clic: el navegador no deja leer archivos JSON
+    if (location.protocol === "file:") throw new Error("ABIERTA_COMO_ARCHIVO");
+    const [usuarios, catalogos, herramientas, demo] = await Promise.all(ARCHIVOS.map(leerJSON));
+    USUARIOS = usuarios.usuarios;
+    PERMISOS = usuarios.permisos;
+    LINEAS = catalogos.lineas;
+    CATEGORIAS = catalogos.categorias;
+    DIAS_AVISO = catalogos.diasAviso;
+    HORAS_TURNO = catalogos.horasTurno;
+    semilla = { herramientas, demo };
+    cargar();
+  }
+
+  // Aviso a pantalla completa cuando los datos no se pueden cargar
+  function mostrarErrorCarga(error) {
+    const comoArchivo = error.message === "ABIERTA_COMO_ARCHIVO";
+    const fondo = document.createElement("div");
+    fondo.className = "modal-fondo abierto";
+    fondo.innerHTML = `
+      <div class="modal" role="alertdialog" aria-modal="true">
+        <div class="modal-cab"><h3>No se pudieron cargar los datos</h3></div>
+        <div class="modal-cuerpo">
+          ${comoArchivo ? `
+            <p style="margin-top:0">Abriste TorqueStock con doble clic. Los datos vienen de archivos JSON
+            y el navegador solo los puede leer si la app se abre desde un servidor.</p>
+            <p>Ábrela de alguna de estas formas:</p>
+            <ul>
+              <li>Doble clic en <strong>Iniciar servidor.bat</strong></li>
+              <li><strong>Go Live</strong> en VS Code</li>
+              <li>El link de GitHub Pages</li>
+            </ul>` : `
+            <p style="margin-top:0">Revisa que la carpeta <strong>data/</strong> esté completa y que los archivos JSON no tengan errores.</p>
+            <p class="error-form"></p>`}
+        </div>
+      </div>`;
+    if (!comoArchivo) fondo.querySelector(".error-form").textContent = error.message;
+    const poner = () => document.body.appendChild(fondo);
+    if (document.body) poner(); else document.addEventListener("DOMContentLoaded", poner);
+  }
+
+  // Promesa que se cumple cuando ya están los datos: las páginas esperan con "await DB.listo"
+  const listo = iniciar().catch((e) => { mostrarErrorCarga(e); throw e; });
+  listo.catch(() => { /* el aviso ya se mostró */ });
 
   // ---------- Persistencia ----------
   let estado;
@@ -141,7 +170,7 @@ const DB = (() => {
   // La regla vive aquí y no solo en la pantalla: si el rol no tiene permiso, la acción se rechaza.
   function exigirPermiso(usuario, accion) {
     const u = USUARIOS.find((x) => x.usuario === usuario);
-    if (!u || !PERMISOS[u.rol][accion]) throw new Error("Tu rol no tiene permiso para esta acción.");
+    if (!u || !(PERMISOS[u.rol] || {})[accion]) throw new Error("Tu rol no tiene permiso para esta acción.");
   }
   // Antes de cualquier cambio: revisa el permiso y parte de los datos más recientes
   function preparar(usuario, accion) {
@@ -368,10 +397,13 @@ const DB = (() => {
   }
   const permisos = (rol) => PERMISOS[rol] || {};
 
-  cargar();
-
   return {
-    ESTADOS, LINEAS, CATEGORIAS, DIAS_AVISO, HORAS_TURNO,
+    listo, ESTADOS,
+    // Se leen de catalogos.json, por eso se piden al momento
+    get LINEAS() { return LINEAS; },
+    get CATEGORIAS() { return CATEGORIAS; },
+    get DIAS_AVISO() { return DIAS_AVISO; },
+    get HORAS_TURNO() { return HORAS_TURNO; },
     listar, activas, buscar, movimientos, historial, indicadores, reporteUtilizacion,
     semaforo, excedeTurno, horasPrestada,
     altaHerramienta, prestar, devolver, devolverConDanio, enviarReparacion, reincorporar,

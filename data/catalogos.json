@@ -1,0 +1,12 @@
+{
+  "diasAviso": 15,
+  "horasTurno": 8,
+  "lineas": ["Línea 1", "Línea 2", "Línea 3", "Línea 4", "Línea 5", "Línea 6", "Mantenimiento"],
+  "categorias": [
+    "Llave dinamométrica de clic",
+    "Torquímetro digital",
+    "Desarmador dinamométrico",
+    "Multiplicador de par",
+    "Atornillador neumático"
+  ]
+}

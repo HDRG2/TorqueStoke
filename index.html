@@ -102,8 +102,11 @@
     });
     // Enter en "Contraseña" envía el formulario (comportamiento normal) y se valida abajo
 
-    document.getElementById("formLogin").addEventListener("submit", (e) => {
+    document.getElementById("formLogin").addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      // Los usuarios vienen de data/usuarios.json: espera a que se carguen
+      try { await DB.listo; } catch (err) { return; }   // si fallan, ya se muestra un aviso
 
       // RNF-05: validar campos antes de enviar
       const msgUsuario = validarCampo(usuario, "usuario");
