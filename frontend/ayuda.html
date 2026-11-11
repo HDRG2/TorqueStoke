@@ -25,32 +25,52 @@
   </header>
 
   <div class="contenedor manual">
+    <!-- Selector de manual por rol -->
+    <div class="panel manual-selector no-imprimir">
+      <div class="panel-cuerpo">
+        <span class="manual-selector-titulo">Ver manual para:</span>
+        <div class="filtros" role="group" aria-label="Manual por rol">
+          <button type="button" class="filtro" data-rol="">Todos</button>
+          <button type="button" class="filtro" data-rol="Administrador">Jefe de almacén</button>
+          <button type="button" class="filtro" data-rol="Almacenista">Almacenista</button>
+          <button type="button" class="filtro" data-rol="Calidad">Ingeniero de calidad</button>
+        </div>
+        <button type="button" class="btn btn-borde btn-sm" id="btnImprimirManual">Imprimir / PDF</button>
+      </div>
+    </div>
+
     <!-- Índice -->
     <nav class="panel manual-indice">
       <div class="panel-cab"><h2>Contenido</h2></div>
       <ol>
-        <li><a href="#intro">¿Qué es TorqueStock?</a></li>
-        <li><a href="#roles">Usuarios y permisos</a></li>
-        <li><a href="#login">Iniciar y cerrar sesión</a></li>
-        <li><a href="#panel">Pantalla principal</a></li>
-        <li><a href="#buscar">Buscar y filtrar herramientas</a></li>
-        <li><a href="#semaforo">Semáforo de calibración</a></li>
-        <li><a href="#prestar">Prestar una herramienta</a></li>
-        <li><a href="#devolver">Recibir una devolución</a></li>
-        <li><a href="#alta">Dar de alta una herramienta</a></li>
-        <li><a href="#calibrar">Actualizar una calibración</a></li>
-        <li><a href="#turno">Préstamos que exceden el turno</a></li>
-        <li><a href="#ficha">Ficha e historial de herramienta</a></li>
-        <li><a href="#reparacion">Reparación y reincorporación</a></li>
-        <li><a href="#baja">Baja definitiva</a></li>
-        <li><a href="#bitacora">Movimientos recientes</a></li>
-        <li><a href="#reportes">Reportes y auditoría</a></li>
-        <li><a href="#problemas">Problemas frecuentes</a></li>
+        <li data-roles="Administrador Almacenista Calidad"><a href="#intro">¿Qué es TorqueStock?</a></li>
+        <li data-roles="Administrador Almacenista Calidad"><a href="#roles">Usuarios y permisos</a></li>
+        <li data-roles="Administrador Almacenista Calidad"><a href="#login">Iniciar y cerrar sesión</a></li>
+        <li data-roles="Administrador Almacenista Calidad"><a href="#panel">Pantalla principal</a></li>
+        <li data-roles="Administrador Almacenista Calidad"><a href="#buscar">Buscar y filtrar herramientas</a></li>
+        <li data-roles="Administrador Almacenista Calidad"><a href="#semaforo">Semáforo de calibración</a></li>
+        <li data-roles="Administrador Almacenista"><a href="#prestar">Prestar una herramienta</a></li>
+        <li data-roles="Administrador Almacenista"><a href="#devolver">Recibir una devolución</a></li>
+        <li data-roles="Administrador"><a href="#alta">Dar de alta una herramienta</a></li>
+        <li data-roles="Administrador Calidad"><a href="#calibrar">Actualizar una calibración</a></li>
+        <li data-roles="Administrador Almacenista"><a href="#turno">Préstamos que exceden el turno</a></li>
+        <li data-roles="Administrador Almacenista Calidad"><a href="#ficha">Ficha e historial de herramienta</a></li>
+        <li data-roles="Administrador Almacenista"><a href="#reparacion">Reparación y reincorporación</a></li>
+        <li data-roles="Administrador"><a href="#baja">Baja definitiva</a></li>
+        <li data-roles="Administrador Almacenista Calidad"><a href="#bitacora">Movimientos recientes</a></li>
+        <li data-roles="Administrador Calidad"><a href="#reportes">Reportes y auditoría</a></li>
+        <li data-roles="Administrador Almacenista Calidad"><a href="#problemas">Problemas frecuentes</a></li>
       </ol>
     </nav>
 
     <main class="manual-contenido">
-      <section class="panel" id="intro">
+      <!-- Solo se ve al imprimir -->
+      <div class="encabezado-impresion">
+        <h2 id="tituloImpresion">TorqueStock — Manual de usuario</h2>
+        <p>Almacén de Herramientas de Torque · Grupo Industrial Par-Tec</p>
+      </div>
+
+      <section class="panel" id="intro" data-roles="Administrador Almacenista Calidad">
         <div class="panel-cab"><h2>1. ¿Qué es TorqueStock?</h2></div>
         <div class="panel-cuerpo">
           <p>TorqueStock es el sistema web del <strong>Almacén de Herramientas de Torque</strong> de Grupo Industrial Par-Tec.
@@ -64,7 +84,7 @@
         </div>
       </section>
 
-      <section class="panel" id="roles">
+      <section class="panel" id="roles" data-roles="Administrador Almacenista Calidad">
         <div class="panel-cab"><h2>2. Usuarios y permisos</h2></div>
         <div class="panel-cuerpo">
           <p>Cada persona entra con su usuario. Lo que puede hacer depende de su rol:</p>
@@ -82,7 +102,7 @@
         </div>
       </section>
 
-      <section class="panel" id="login">
+      <section class="panel" id="login" data-roles="Administrador Almacenista Calidad">
         <div class="panel-cab"><h2>3. Iniciar y cerrar sesión</h2></div>
         <div class="panel-cuerpo">
           <ol class="pasos">
@@ -95,7 +115,7 @@
         </div>
       </section>
 
-      <section class="panel" id="panel">
+      <section class="panel" id="panel" data-roles="Administrador Almacenista Calidad">
         <div class="panel-cab"><h2>4. Pantalla principal</h2></div>
         <div class="panel-cuerpo">
           <p>Al entrar verás tres zonas:</p>
@@ -110,7 +130,7 @@
         </div>
       </section>
 
-      <section class="panel" id="buscar">
+      <section class="panel" id="buscar" data-roles="Administrador Almacenista Calidad">
         <div class="panel-cab"><h2>5. Buscar y filtrar herramientas</h2></div>
         <div class="panel-cuerpo">
           <p>Escribe en la barra de búsqueda y la tabla se filtra al instante. Puedes buscar por:</p>
@@ -124,7 +144,7 @@
         </div>
       </section>
 
-      <section class="panel" id="semaforo">
+      <section class="panel" id="semaforo" data-roles="Administrador Almacenista Calidad">
         <div class="panel-cab"><h2>6. Semáforo de calibración</h2></div>
         <div class="panel-cuerpo">
           <p>La columna <strong>Calibración</strong> muestra el color según la fecha de próxima calibración:</p>
@@ -136,7 +156,7 @@
         </div>
       </section>
 
-      <section class="panel" id="prestar">
+      <section class="panel" id="prestar" data-roles="Administrador Almacenista">
         <div class="panel-cab"><h2>7. Prestar una herramienta</h2></div>
         <div class="panel-cuerpo">
           <p class="rol-chip">Almacenista · Jefe de almacén</p>
@@ -150,7 +170,7 @@
         </div>
       </section>
 
-      <section class="panel" id="devolver">
+      <section class="panel" id="devolver" data-roles="Administrador Almacenista">
         <div class="panel-cab"><h2>8. Recibir una devolución</h2></div>
         <div class="panel-cuerpo">
           <p class="rol-chip">Almacenista · Jefe de almacén</p>
@@ -164,7 +184,7 @@
         </div>
       </section>
 
-      <section class="panel" id="alta">
+      <section class="panel" id="alta" data-roles="Administrador">
         <div class="panel-cab"><h2>9. Dar de alta una herramienta</h2></div>
         <div class="panel-cuerpo">
           <p class="rol-chip">Jefe de almacén</p>
@@ -177,7 +197,7 @@
         </div>
       </section>
 
-      <section class="panel" id="calibrar">
+      <section class="panel" id="calibrar" data-roles="Administrador Calidad">
         <div class="panel-cab"><h2>10. Actualizar una calibración</h2></div>
         <div class="panel-cuerpo">
           <p class="rol-chip">Ingeniero de calidad · Jefe de almacén</p>
@@ -190,7 +210,7 @@
         </div>
       </section>
 
-      <section class="panel" id="turno">
+      <section class="panel" id="turno" data-roles="Administrador Almacenista">
         <div class="panel-cab"><h2>11. Préstamos que exceden el turno</h2></div>
         <div class="panel-cuerpo">
           <p>Si una herramienta lleva más de <strong>8 horas</strong> prestada, el sistema:</p>
@@ -202,7 +222,7 @@
         </div>
       </section>
 
-      <section class="panel" id="ficha">
+      <section class="panel" id="ficha" data-roles="Administrador Almacenista Calidad">
         <div class="panel-cab"><h2>12. Ficha e historial de herramienta</h2></div>
         <div class="panel-cuerpo">
           <p class="rol-chip">Todos los roles</p>
@@ -215,7 +235,7 @@
         </div>
       </section>
 
-      <section class="panel" id="reparacion">
+      <section class="panel" id="reparacion" data-roles="Administrador Almacenista">
         <div class="panel-cab"><h2>13. Reparación y reincorporación</h2></div>
         <div class="panel-cuerpo">
           <p class="rol-chip">Enviar: Jefe de almacén · Reincorporar: Almacenista y Jefe de almacén</p>
@@ -228,7 +248,7 @@
         </div>
       </section>
 
-      <section class="panel" id="baja">
+      <section class="panel" id="baja" data-roles="Administrador">
         <div class="panel-cab"><h2>14. Baja definitiva</h2></div>
         <div class="panel-cuerpo">
           <p class="rol-chip">Jefe de almacén</p>
@@ -237,7 +257,7 @@
         </div>
       </section>
 
-      <section class="panel" id="bitacora">
+      <section class="panel" id="bitacora" data-roles="Administrador Almacenista Calidad">
         <div class="panel-cab"><h2>15. Movimientos recientes</h2></div>
         <div class="panel-cuerpo">
           <p>Cada acción queda registrada con fecha, hora y usuario que la hizo:</p>
@@ -253,7 +273,7 @@
         </div>
       </section>
 
-      <section class="panel" id="reportes">
+      <section class="panel" id="reportes" data-roles="Administrador Calidad">
         <div class="panel-cab"><h2>16. Reportes y auditoría</h2></div>
         <div class="panel-cuerpo">
           <p class="rol-chip">Jefe de almacén · Ingeniero de calidad</p>
@@ -268,7 +288,7 @@
         </div>
       </section>
 
-      <section class="panel" id="problemas">
+      <section class="panel" id="problemas" data-roles="Administrador Almacenista Calidad">
         <div class="panel-cab"><h2>17. Problemas frecuentes</h2></div>
         <div class="panel-cuerpo">
           <dl class="faq">
@@ -276,16 +296,16 @@
             <dd>Solo se aceptan letras y números, máximo 15. Quita espacios, acentos, ñ y símbolos.</dd>
             <dt>"Usuario o contraseña incorrectos".</dt>
             <dd>Revisa que no tengas activadas las mayúsculas en la contraseña. Si persiste, pide al Jefe de almacén que verifique tu usuario.</dd>
-            <dt>El botón Prestar está gris.</dt>
-            <dd>La herramienta tiene la calibración vencida. Envíala a Calidad para recalibrar.</dd>
-            <dt>No veo el botón "+ Nueva herramienta" o "Calibración".</dt>
-            <dd>Tu rol no tiene ese permiso (ver sección 2).</dd>
+            <dt data-roles="Administrador Almacenista">El botón Prestar está gris.</dt>
+            <dd data-roles="Administrador Almacenista">La herramienta tiene la calibración vencida. Envíala a Calidad para recalibrar.</dd>
+            <dt data-roles="Almacenista Calidad">No veo el botón "+ Nueva herramienta" o "Calibración".</dt>
+            <dd data-roles="Almacenista Calidad">Tu rol no tiene ese permiso (ver sección 2).</dd>
             <dt>La página me regresa al login.</dt>
             <dd>La sesión se cierra al cerrar el navegador. Vuelve a iniciar sesión.</dd>
             <dt>No encuentro una herramienta en la tabla.</dt>
             <dd>Revisa que el filtro esté en "Todas" y borra la búsqueda. Si fue dada de baja, búscala en el filtro "Bajas".</dd>
-            <dt>Una herramienta no se puede prestar y no está vencida.</dt>
-            <dd>Revisa su estado: si está En reparación debe reincorporarse primero.</dd>
+            <dt data-roles="Administrador Almacenista">Una herramienta no se puede prestar y no está vencida.</dt>
+            <dd data-roles="Administrador Almacenista">Revisa su estado: si está En reparación debe reincorporarse primero.</dd>
             <dt>Los datos no aparecen en otra computadora.</dt>
             <dd>En esta versión los datos se guardan en el navegador del equipo donde se capturan. Usa siempre la computadora de ventanilla.</dd>
           </dl>
@@ -306,6 +326,48 @@
       const fila = document.querySelector(`tr[data-rol="${u.rol}"]`);
       if (fila) fila.classList.add("mi-rol");
     }
+
+    // ---------- Manual por rol ----------
+    // Cada sección tiene data-roles con los roles que la usan. Al elegir un rol se ocultan las demás.
+    const NOMBRES = { Administrador: "Jefe de almacén", Almacenista: "Almacenista", Calidad: "Ingeniero de calidad" };
+    const titulos = [...document.querySelectorAll(".manual-contenido section h2")];
+    titulos.forEach((h) => (h.dataset.titulo = h.textContent.replace(/^\d+\.\s*/, "")));
+
+    function mostrarManual(rol) {
+      if (!NOMBRES[rol]) rol = "";
+      document.querySelectorAll("[data-roles]").forEach((el) =>
+        el.classList.toggle("oculto", !!rol && !el.dataset.roles.split(" ").includes(rol)));
+      document.querySelectorAll(".manual-selector .filtro").forEach((b) =>
+        b.classList.toggle("activo", b.dataset.rol === rol));
+
+      // Numera de nuevo solo las secciones visibles (1, 2, 3… sin saltos)
+      let n = 0;
+      titulos.forEach((h) => {
+        if (!h.closest("section").classList.contains("oculto")) h.textContent = `${++n}. ${h.dataset.titulo}`;
+      });
+
+      const nombre = rol ? `del ${NOMBRES[rol]}` : "de usuario";
+      document.getElementById("tituloImpresion").textContent = `TorqueStock — Manual ${nombre}`;
+      document.title = `TorqueStock — Manual ${nombre}`;
+
+      // Guarda el rol en la dirección (?rol=Almacenista) para poder compartir el link de cada manual
+      const url = new URL(location.href);
+      if (rol) url.searchParams.set("rol", rol); else url.searchParams.delete("rol");
+      history.replaceState(null, "", url);
+    }
+
+    document.querySelectorAll(".manual-selector .filtro").forEach((b) =>
+      b.addEventListener("click", () => mostrarManual(b.dataset.rol)));
+
+    // Rol inicial: el de la dirección, si no el de la sesión, si no "Todos"
+    mostrarManual(new URLSearchParams(location.search).get("rol") ?? (u ? u.rol : ""));
+
+    // Imprimir / PDF (no se permite cuando la página está dentro de otra, como en claude.ai)
+    const btnImprimir = document.getElementById("btnImprimirManual");
+    let dentroDeMarco = true;
+    try { dentroDeMarco = window.self !== window.top; } catch (e) { /* dentro de otra página */ }
+    if (dentroDeMarco) btnImprimir.classList.add("oculto");
+    btnImprimir.addEventListener("click", () => window.print());
   </script>
   <script src="js/pwa.js"></script>
 </body>

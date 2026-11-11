@@ -252,6 +252,11 @@ kbd { background: #eef1f5; border: 1px solid var(--gris-borde); border-bottom-wi
 .faq dt { font-weight: 700; margin-top: 12px; }
 .faq dd { margin: 4px 0 0; color: var(--gris-texto); }
 .manual-pie { text-align: center; color: var(--gris-texto); font-size: 12px; }
+.manual-selector .panel-cuerpo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.manual-selector-titulo { font-weight: 700; color: var(--azul); font-size: 14px; }
+.manual-selector .filtros { flex: 1 1 auto; }
+.manual-selector { grid-column: 1 / -1; }   /* barra a todo lo ancho, arriba del índice */
+.manual-selector .filtros { flex-wrap: wrap; overflow: visible; }
 .enlace-ayuda { display: block; text-align: center; margin-top: 14px; font-size: 13px; color: var(--azul); }
 @media (max-width: 900px) {
   .manual { grid-template-columns: 1fr; }
@@ -334,6 +339,9 @@ tr.fila-baja td { color: #888; }
   .encabezado-impresion { display: block; margin-bottom: 14px; }
   .reporte-grid { grid-template-columns: repeat(3, 1fr); }
   .tabla-envoltura { overflow: visible; }
+  .manual { display: block; }                 /* manual impreso: sin índice lateral, a todo lo ancho */
+  .manual-indice { display: none; }
+  .manual-contenido { gap: 12px; }
 }
 .rejilla-mitad { grid-template-columns: 1fr 1fr; }
 @media (max-width: 1100px) { .rejilla-mitad { grid-template-columns: 1fr; } }
