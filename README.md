@@ -32,8 +32,7 @@ Los cambios que haces en la app se guardan en el navegador (LocalStorage). El Je
 
 Las fechas son **relativas** para que la demo nunca se vea vieja: `"diasParaCalibracion": 9` significa "vence dentro de 9 días" y `"horasAtras": 2` significa "hace 2 horas"; un número negativo es una fecha que ya pasó.
 
-**Cómo aplicar cambios a los JSON:** el navegador conserva los datos que ya tenía guardados, así que, después de editar un archivo, entra como Jefe y presiona **Restablecer demo**. Los cambios a `usuarios.json` y `catalogos.json` se ven con solo recargar la página. Si usas la app instalada en el celular, sube también la `VERSION` de `frontend/sw.js`.
-
+**Cómo aplicar cambios a los JSON:** el navegador conserva los datos que ya tenía guardados, así que, después de editar un archivo, entra como Jefe y presiona **Restablecer demo**. Los cambios a `usuarios.json` y `catalogos.json` se ven con solo recargar la página.
 ## Uso sin internet
 
 **A) Servidor local (sin internet, celular en el mismo WiFi o hotspot)**
@@ -45,7 +44,8 @@ Las fechas son **relativas** para que la demo nunca se vea vieja: `"diasParaCali
 1. Publica la carpeta en GitHub Pages (`https://hdrg2.github.io/TorqueStoke/`).
 2. Ábrela una vez en el celular con internet y elige *Agregar a pantalla de inicio* / *Instalar app*.
 3. Desde ese momento abre y funciona sin internet (`frontend/sw.js` guarda todos los archivos).
-4. Si cambias archivos, sube el número de `VERSION` en `frontend/sw.js` para que el celular descargue la versión nueva.
+4. Con internet, la app siempre carga la versión más nueva; sin internet (o si la red tarda más de 4 segundos) usa la última copia guardada.
+5. Si agregas o quitas archivos, actualiza la lista `ARCHIVOS` y sube el número de `VERSION` en `frontend/sw.js`.
 
 ## Estructura
 

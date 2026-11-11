@@ -4,7 +4,7 @@
    vez que se abre; después funciona sin conexión.
    Si cambias algún archivo, sube el número de VERSION.
    ========================================================= */
-const VERSION = "torquestock-v5";
+const VERSION = "torquestock-v6";
 const ARCHIVOS = [
   "./", "./index.html", "./panel.html", "./reportes.html", "./ayuda.html", "./acerca.html",
   "./css/styles.css",
@@ -25,18 +25,36 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-// Primero la copia guardada (rápido y sin internet); si hay red, se actualiza en segundo plano
+// Primero internet (siempre la versión más nueva); sin conexión, la copia guardada.
+// Si la red tarda más de ESPERA_MS (señal débil), también se usa la copia guardada.
+const ESPERA_MS = 4000;
+
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
   const url = new URL(e.request.url);
   if (url.origin !== location.origin) return;
-  e.respondWith(
-    caches.open(VERSION).then(async (cache) => {
-      const guardada = await cache.match(e.request, { ignoreSearch: true });
-      const deRed = fetch(e.request)
-        .then((resp) => { if (resp.ok) cache.put(e.request, resp.clone()); return resp; })
-        .catch(() => null);
-      return guardada || (await deRed) || cache.match("./index.html");
-    })
-  );
+  e.respondWith(responder(e.request));
 });
+
+async function responder(request) {
+  const cache = await caches.open(VERSION);
+  const guardada = () => cache.match(request, { ignoreSearch: true });
+
+  // "no-cache": pregunta al servidor si hay versión nueva en vez de usar la caché normal del navegador
+  const deRed = fetch(request.url, { cache: "no-cache", credentials: "same-origin" })
+    .then((resp) => {
+      if (resp.redirected) return fetch(request);   // las páginas redirigidas se piden de forma normal
+      if (resp.ok) cache.put(request, resp.clone());
+      return resp;
+    });
+
+  try {
+    const lenta = new Promise((_, rechazar) => setTimeout(() => rechazar(new Error("lenta")), ESPERA_MS));
+    return await Promise.race([deRed, lenta]);
+  } catch (err) {
+    const copia = await guardada();
+    if (copia) return copia;
+    try { return await deRed; }                     // sin copia: espera a la red aunque tarde
+    catch (e) { return (await cache.match("./index.html")) || Response.error(); }
+  }
+}
