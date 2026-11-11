@@ -21,6 +21,19 @@ o abre `index.html` y haz clic en **Go Live**. No requiere instalar nada ni inte
 
 Los datos se guardan en el navegador (LocalStorage). El Jefe de almacén puede usar **Restablecer demo** para volver a los datos de ejemplo.
 
+## Uso sin internet
+
+**A) Servidor local (sin internet, celular en el mismo WiFi o hotspot)**
+1. Doble clic en `Iniciar servidor.bat` y acepta el permiso de administrador.
+2. La ventana muestra una dirección como `http://192.168.1.50:8080`: ábrela en el celular.
+3. Deja la ventana abierta mientras la usas.
+
+**B) App instalada en el celular (PWA)**
+1. Publica la carpeta en GitHub Pages (`https://hdrg2.github.io/TorqueStoke/`).
+2. Ábrela una vez en el celular con internet y elige *Agregar a pantalla de inicio* / *Instalar app*.
+3. Desde ese momento abre y funciona sin internet (`sw.js` guarda todos los archivos).
+4. Si cambias archivos, sube el número de `VERSION` en `sw.js` para que el celular descargue la versión nueva.
+
 ## Estructura
 
 ```
@@ -35,6 +48,12 @@ js/sesion.js      Manejo de sesión
 js/util.js        Utilidades de interfaz (etiquetas, fechas, CSV)
 js/app.js         Lógica del panel
 js/reportes.js    Lógica de reportes
+js/pwa.js         Registro del modo sin internet
+sw.js             Service worker: guarda la app para usarla sin conexión
+manifest.json     Datos para instalar la app en el celular
+img/              Íconos de la app
+servidor.ps1      Servidor local para abrirla desde el celular sin internet
+Iniciar servidor.bat  Doble clic para arrancar el servidor
 ```
 
 ## Requerimientos cubiertos
@@ -53,7 +72,7 @@ js/reportes.js    Lógica de reportes
 
 ## Funciones por rol (Sección 1.2 del PIA)
 
-- **Jefe:** reparación externa, baja definitiva, reporte de extravío con responsable, alerta de préstamos que exceden el turno (8 h), reportes ejecutivos.
+- **Jefe:** reparación externa, baja definitiva, alerta de préstamos que exceden el turno (8 h), reportes ejecutivos.
 - **Almacenista:** préstamo, devolución, devolución con daño, reincorporación tras reparación.
 - **Calidad:** semáforo, recalibración, historial por herramienta exportable, agenda de calibración.
 

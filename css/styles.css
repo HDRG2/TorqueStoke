@@ -187,7 +187,6 @@ td .sub { display: block; font-size: 12px; color: var(--gris-texto); }
 .mov-Recalibración { color: #6b3fa0; }
 .mov-Reparación { color: #7a5b00; }
 .mov-Reincorporación { color: #0f7a6c; }
-.mov-Extravío { color: var(--rojo); }
 .mov-Baja { color: #555; }
 
 /* ---------- Modal ---------- */
@@ -275,7 +274,6 @@ kbd { background: #eef1f5; border: 1px solid var(--gris-borde); border-bottom-wi
 .kpi.ext .valor { color: #7d1f1a; }
 
 .est-reparacion { background: #fff3d1; color: #7a5b00; }
-.est-extraviada { background: #7d1f1a; color: #fff; }
 .est-baja { background: #e6e8ec; color: #555; }
 
 .alerta {

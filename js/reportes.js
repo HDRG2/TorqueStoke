@@ -24,7 +24,7 @@ $("rDisp").textContent = k.disponibles;
 $("rPrest").textContent = k.enPrestamo;
 $("rVenc").textContent = k.vencidas;
 $("rRep").textContent = k.enReparacion;
-$("rExt").textContent = k.extraviadas;
+$("rExc").textContent = k.excedidas;
 
 // ---------- Utilización (barras) ----------
 function barras(id, datos, max = 8) {
@@ -57,20 +57,18 @@ $("tablaAgenda").innerHTML = agenda.length
   : '<tr><td colspan="4" class="vacio">Todas las herramientas tienen calibración vigente.</td></tr>';
 
 // ---------- Responsables pendientes ----------
-const pendientes = DB.activas().filter((h) => h.estado === E.EXTRAVIADA || DB.excedeTurno(h));
+const pendientes = DB.activas().filter((h) => DB.excedeTurno(h));
 $("tablaResponsables").innerHTML = pendientes.length
   ? pendientes.map((h) => {
       const p = h.prestamo || {};
-      const situacion = h.estado === E.EXTRAVIADA
-        ? '<span class="etiqueta est-extraviada">Extraviada</span>'
-        : `<span class="etiqueta sem-rojo">Excede turno</span><span class="sub">Hace ${fmtDuracion(DB.horasPrestada(h))}</span>`;
+      const situacion = `<span class="etiqueta sem-rojo">Excede turno</span><span class="sub">Hace ${fmtDuracion(DB.horasPrestada(h))}</span>`;
       return `<tr>
         <td class="m-cab"><span class="codigo">${escapar(h.codigo)}</span><span class="sub">${escapar(h.nombre)}</span></td>
         <td data-label="Responsable">${escapar(p.operador || "—")}<span class="sub">#${escapar(p.empleado || "—")}</span></td>
         <td data-label="Línea">${escapar(p.linea || "—")}</td>
         <td data-label="Situación">${situacion}</td></tr>`;
     }).join("")
-  : '<tr><td colspan="4" class="vacio">No hay responsables pendientes.</td></tr>';
+  : '<tr><td colspan="4" class="vacio">Todas las herramientas prestadas están dentro del turno.</td></tr>';
 
 // ---------- Bitácora completa con filtros ----------
 function movsFiltrados() {
@@ -122,6 +120,12 @@ $("csvAgenda").onclick = () => descargarCSV(`agenda_calibracion_${fechaArchivo()
 $("csvMovs").onclick = () => descargarCSV(`movimientos_${fechaArchivo()}.csv`,
   ["Fecha", "Código", "Movimiento", "Detalle", "Usuario"],
   movsFiltrados().map((m) => [fmtFechaHora(m.fecha), m.codigo, m.tipo, m.detalle, m.usuario]));
+
+// Si otra pestaña cambia los datos, vuelve a armar el reporte con lo más reciente
+window.addEventListener("storage", (e) => {
+  if (e.key && !e.key.startsWith("torquestock_db")) return;
+  window.location.reload();
+});
 
 if (dentroDeMarco) $("btnImprimir").classList.add("oculto");
 $("btnImprimir").onclick = () => window.print();

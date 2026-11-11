@@ -60,7 +60,7 @@ function pintarIndicadores() {
   $("kpiPrest").textContent = k.enPrestamo;
   $("kpiVenc").textContent = k.vencidas;
   $("kpiRep").textContent = k.enReparacion;
-  $("kpiExt").textContent = k.extraviadas;
+  $("kpiExc").textContent = k.excedidas;
 
   const alerta = $("alertaTurno");
   if (k.excedidas > 0) {
@@ -95,7 +95,6 @@ function cumpleFiltro(h) {
     case "porvencer":  return s === "amarillo";
     case "vencida":    return s === "rojo";
     case "reparacion": return h.estado === E.REPARACION;
-    case "extraviada": return h.estado === E.EXTRAVIADA;
     default:           return true;
   }
 }
@@ -121,16 +120,11 @@ function accionesDe(h) {
     case E.PRESTAMO:
       if (puede.prestar) a.push({ id: "devolver", texto: "Devolver", clase: "btn-verde" });
       if (puede.prestar) a.push({ id: "danio", texto: "Devolver con daño", clase: "btn-borde" });
-      if (puede.extravio) a.push({ id: "extravio", texto: "Reportar extravío", clase: "btn-rojo-borde" });
       if (puede.calibrar) a.push({ id: "calibrar", texto: "Calibración", clase: "btn-borde" });
       break;
     case E.REPARACION:
       if (puede.reincorporar) a.push({ id: "reincorporar", texto: "Reincorporar", clase: "btn-verde" });
       if (puede.calibrar) a.push({ id: "calibrar", texto: "Calibración", clase: "btn-borde" });
-      if (puede.baja) a.push({ id: "baja", texto: "Dar de baja", clase: "btn-rojo-borde" });
-      break;
-    case E.EXTRAVIADA:
-      if (puede.reincorporar) a.push({ id: "reincorporar", texto: "Localizada", clase: "btn-verde" });
       if (puede.baja) a.push({ id: "baja", texto: "Dar de baja", clase: "btn-rojo-borde" });
       break;
   }
@@ -235,11 +229,6 @@ const ACCIONES_MOTIVO = {
     placeholder: "Ej. ajuste de mecanismo en taller externo…",
     fn: (c, t) => DB.enviarReparacion(c, t, usuario.usuario), ok: (c) => `${c} enviada a reparación.`,
   },
-  extravio: {
-    titulo: "Reportar extravío", etiqueta: "Observación", boton: "Reportar extravío",
-    placeholder: "Ej. no fue devuelta al cierre del turno; no se localiza en la línea.",
-    fn: (c, t) => DB.marcarExtraviada(c, t, usuario.usuario), ok: (c) => `${c} reportada como extraviada.`,
-  },
   baja: {
     titulo: "Baja definitiva", etiqueta: "Motivo de la baja", boton: "Dar de baja",
     placeholder: "Ej. daño irreparable, fuera de tolerancia…",
@@ -284,7 +273,7 @@ function iniciarAccion(accion, codigo) {
     $("motivoTitulo").textContent = cfg.titulo;
     $("motivoEtiqueta").textContent = cfg.etiqueta;
     $("motivoConfirmar").textContent = cfg.boton;
-    $("motivoConfirmar").className = `btn ${accion === "baja" || accion === "extravio" ? "btn-rojo" : "btn-primario"}`;
+    $("motivoConfirmar").className = `btn ${accion === "baja" ? "btn-rojo" : "btn-primario"}`;
     $("motivoTexto").placeholder = cfg.placeholder;
     $("motivoResumen").innerHTML = resumenHerr(h);
     $("formMotivo").reset();
@@ -358,7 +347,7 @@ $("formCalib").addEventListener("submit", (e) => {
   } catch (err) { $("errorCalib").textContent = err.message; }
 });
 
-// Acciones con motivo (daño, reparación, extravío, baja)
+// Acciones con motivo (daño, reparación, baja)
 $("formMotivo").addEventListener("submit", (e) => {
   e.preventDefault();
   const cfg = ACCIONES_MOTIVO[accionMotivo];
@@ -374,11 +363,18 @@ $("formMotivo").addEventListener("submit", (e) => {
 
 $("btnRestablecer").onclick = async () => {
   if (await confirmar("¿Restablecer todos los datos a los de ejemplo? Se perderán los cambios.", "Restablecer")) {
-    DB.restablecer();
+    try { DB.restablecer(usuario.usuario); } catch (err) { avisar(err.message, "error"); return; }
     avisar("Datos de demostración restablecidos.");
     refrescar();
   }
 };
+
+// Si otra pestaña cambia los datos, se muestran aquí al momento
+window.addEventListener("storage", (e) => {
+  if (e.key && !e.key.startsWith("torquestock_db")) return;
+  DB.recargar();
+  refrescar();
+});
 
 refrescar();
 // Actualiza tiempos de préstamo y alertas de turno cada minuto

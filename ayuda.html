@@ -9,6 +9,8 @@
   <meta name="apple-mobile-web-app-title" content="TorqueStock">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23e2662f%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-size=%2738%27 font-family=%27Arial%27 font-weight=%27bold%27 fill=%27white%27 text-anchor=%27middle%27%3ET%3C/text%3E%3C/svg%3E">
   <title>TorqueStock — Manual de usuario</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -40,7 +42,7 @@
         <li><a href="#turno">Préstamos que exceden el turno</a></li>
         <li><a href="#ficha">Ficha e historial de herramienta</a></li>
         <li><a href="#reparacion">Reparación y reincorporación</a></li>
-        <li><a href="#extravio">Extravíos y bajas</a></li>
+        <li><a href="#baja">Baja definitiva</a></li>
         <li><a href="#bitacora">Movimientos recientes</a></li>
         <li><a href="#reportes">Reportes y auditoría</a></li>
         <li><a href="#problemas">Problemas frecuentes</a></li>
@@ -68,7 +70,7 @@
           <p>Cada persona entra con su usuario. Lo que puede hacer depende de su rol:</p>
           <div class="tabla-envoltura">
             <table>
-              <thead><tr><th>Rol</th><th>Consultar / historial</th><th>Prestar / Devolver</th><th>Alta</th><th>Calibración</th><th>Reincorporar</th><th>Reparación, extravío y baja</th><th>Reportes</th></tr></thead>
+              <thead><tr><th>Rol</th><th>Consultar / historial</th><th>Prestar / Devolver</th><th>Alta</th><th>Calibración</th><th>Reincorporar</th><th>Reparación y baja</th><th>Reportes</th></tr></thead>
               <tbody>
                 <tr data-rol="Administrador"><td><strong>Jefe de almacén</strong> (Administrador)</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
                 <tr data-rol="Almacenista"><td><strong>Almacenista</strong> de ventanilla</td><td>✔</td><td>✔</td><td>—</td><td>—</td><td>✔</td><td>—</td><td>—</td></tr>
@@ -99,7 +101,7 @@
           <p>Al entrar verás tres zonas:</p>
           <ul>
             <li><strong>Tarjetas de resumen</strong> (arriba): Total de herramientas, Disponibles, En préstamo, Calibración vencida,
-              En reparación y Extraviadas. Se actualizan solas. <em>Haz clic en una tarjeta</em> para ver solo esas herramientas en la tabla.</li>
+              En reparación y Exceden turno. Se actualizan solas. <em>Haz clic en una tarjeta</em> para ver solo esas herramientas en la tabla.</li>
             <li><strong>Alerta roja</strong> (si aplica): avisa cuando un préstamo lleva más de 8 horas sin devolverse.</li>
             <li><strong>Inventario de herramientas</strong> (centro): la tabla con todas las herramientas, su calibración y estado.
               Cada fila tiene el <em>botón principal</em> (Prestar, Devolver, Reincorporar o Calibración, según el caso) y el botón <strong>⋯ Ficha</strong> con el resto de acciones.</li>
@@ -118,7 +120,7 @@
           </ul>
           <p>Los botones de filtro muestran: <strong>Todas</strong>, <strong>Disponible</strong>, <strong>En préstamo</strong>,
           <strong>Excede turno</strong>, <strong>Por vencer</strong>, <strong>Calibración vencida</strong>,
-          <strong>En reparación</strong>, <strong>Extraviadas</strong> y <strong>Bajas</strong> (las herramientas dadas de baja solo aparecen en este filtro). Puedes combinar filtro y búsqueda.</p>
+          <strong>En reparación</strong> y <strong>Bajas</strong> (las herramientas dadas de baja solo aparecen en este filtro). Puedes combinar filtro y búsqueda.</p>
         </div>
       </section>
 
@@ -196,7 +198,7 @@
             <li>Muestra una <strong>alerta roja</strong> arriba de la tabla (haz clic en ella para ver cuáles son).</li>
             <li>Marca la fila en rojo con la leyenda <span class="texto-rojo">EXCEDE TURNO</span> y el tiempo transcurrido.</li>
           </ul>
-          <p>Localiza al operador responsable que aparece en la fila. Si la herramienta no aparece, el Jefe de almacén debe reportarla como extraviada.</p>
+          <p>Localiza al operador responsable que aparece en la fila y pide que la devuelva. El almacén no cierra el turno con préstamos pendientes.</p>
         </div>
       </section>
 
@@ -207,7 +209,7 @@
           <p>El botón <span class="btn btn-borde btn-sm">⋯ Ficha</span> abre los datos de la herramienta con:</p>
           <ul>
             <li>Todas las acciones que tu rol puede hacer en ese momento.</li>
-            <li>El <strong>historial completo</strong>: préstamos, devoluciones, recalibraciones, reparaciones y extravíos.</li>
+            <li>El <strong>historial completo</strong>: préstamos, devoluciones, recalibraciones, reparaciones y bajas.</li>
             <li><strong>Exportar historial (CSV)</strong>: descarga un archivo que se abre en Excel, listo para mostrar en una auditoría.</li>
           </ul>
         </div>
@@ -226,15 +228,12 @@
         </div>
       </section>
 
-      <section class="panel" id="extravio">
-        <div class="panel-cab"><h2>14. Extravíos y bajas</h2></div>
+      <section class="panel" id="baja">
+        <div class="panel-cab"><h2>14. Baja definitiva</h2></div>
         <div class="panel-cuerpo">
           <p class="rol-chip">Jefe de almacén</p>
-          <p><strong>Reportar extravío:</strong> en una herramienta prestada que no fue devuelta, abre <strong>⋯ Ficha → Reportar extravío</strong> y escribe una observación.
-          Queda como <span class="etiqueta est-extraviada">Extraviada</span> y conserva el nombre y número del operador responsable.
-          Si aparece después, usa <span class="btn btn-verde btn-sm">Localizada</span> para regresarla a disponible.</p>
-          <p><strong>Baja definitiva:</strong> para herramientas irreparables o perdidas, <strong>⋯ Ficha → Dar de baja</strong> con el motivo.
-          Sale del inventario activo y solo se ve en el filtro <strong>Bajas</strong>; su historial se conserva.</p>
+          <p>Para herramientas irreparables o fuera de tolerancia: <strong>⋯ Ficha → Dar de baja</strong> y escribe el motivo.
+          Sale del inventario activo y solo se ve en el filtro <strong>Bajas</strong>; su historial se conserva para auditoría.</p>
         </div>
       </section>
 
@@ -248,7 +247,7 @@
             <li><span class="mov-Alta"><strong>Alta</strong></span>: herramienta nueva registrada.</li>
             <li><span class="mov-Recalibración"><strong>Recalibración</strong></span>: fecha anterior y nueva fecha de vigencia.</li>
             <li><span class="mov-Reparación"><strong>Reparación</strong></span> / <span class="mov-Reincorporación"><strong>Reincorporación</strong></span>: salida y regreso de mantenimiento.</li>
-            <li><span class="mov-Extravío"><strong>Extravío</strong></span> / <span class="mov-Baja"><strong>Baja</strong></span>: con responsable o motivo.</li>
+            <li><span class="mov-Baja"><strong>Baja</strong></span>: con el motivo.</li>
           </ul>
           <p>Úsalo en auditorías IATF 16949 / ISO 9001 para mostrar la trazabilidad de cada herramienta.</p>
         </div>
@@ -262,7 +261,7 @@
           <ul>
             <li>Resumen del almacén y gráficas de <strong>herramientas más prestadas</strong>, <strong>préstamos por línea</strong> y <strong>operadores con más préstamos</strong>.</li>
             <li><strong>Agenda de calibración</strong>: herramientas vencidas y por vencer, ordenadas por fecha.</li>
-            <li><strong>Responsables pendientes</strong>: extravíos y préstamos que exceden el turno.</li>
+            <li><strong>Préstamos pendientes</strong>: los que exceden el turno, con su operador responsable.</li>
             <li><strong>Bitácora completa</strong> con filtros por texto, tipo de movimiento y rango de fechas.</li>
           </ul>
           <p>Exporta a Excel con los botones <strong>CSV</strong> (inventario, agenda y movimientos) o usa <strong>Imprimir / PDF</strong> para entregar el reporte en auditoría.</p>
@@ -286,7 +285,7 @@
             <dt>No encuentro una herramienta en la tabla.</dt>
             <dd>Revisa que el filtro esté en "Todas" y borra la búsqueda. Si fue dada de baja, búscala en el filtro "Bajas".</dd>
             <dt>Una herramienta no se puede prestar y no está vencida.</dt>
-            <dd>Revisa su estado: si está En reparación o Extraviada debe reincorporarse primero.</dd>
+            <dd>Revisa su estado: si está En reparación debe reincorporarse primero.</dd>
             <dt>Los datos no aparecen en otra computadora.</dt>
             <dd>En esta versión los datos se guardan en el navegador del equipo donde se capturan. Usa siempre la computadora de ventanilla.</dd>
           </dl>
@@ -308,5 +307,6 @@
       if (fila) fila.classList.add("mi-rol");
     }
   </script>
+  <script src="js/pwa.js"></script>
 </body>
 </html>

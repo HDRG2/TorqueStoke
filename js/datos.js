@@ -6,7 +6,7 @@
    ========================================================= */
 
 const DB = (() => {
-  const CLAVE = "torquestock_db_v2";
+  const CLAVE = "torquestock_db_v3";
   const DIAS_AVISO = 15;    // RF-06: amarillo = vence en 15 días o menos
   const HORAS_TURNO = 8;    // Préstamo que excede un turno = no devuelto al cierre de jornada (Sección 1.2)
 
@@ -15,7 +15,6 @@ const DB = (() => {
     DISPONIBLE: "Disponible",
     PRESTAMO: "En préstamo",
     REPARACION: "En reparación",
-    EXTRAVIADA: "Extraviada",
     BAJA: "Baja",
   };
 
@@ -28,9 +27,9 @@ const DB = (() => {
 
   // Qué puede hacer cada rol (Secciones 1.2 y 8)
   const PERMISOS = {
-    Administrador: { alta: true,  prestar: true,  calibrar: true,  reparar: true,  reincorporar: true,  extravio: true,  baja: true,  reportes: true,  restablecer: true },
-    Almacenista:   { alta: false, prestar: true,  calibrar: false, reparar: false, reincorporar: true,  extravio: false, baja: false, reportes: false, restablecer: false },
-    Calidad:       { alta: false, prestar: false, calibrar: true,  reparar: false, reincorporar: false, extravio: false, baja: false, reportes: true,  restablecer: false },
+    Administrador: { alta: true,  prestar: true,  calibrar: true,  reparar: true,  reincorporar: true,  baja: true,  reportes: true,  restablecer: true },
+    Almacenista:   { alta: false, prestar: true,  calibrar: false, reparar: false, reincorporar: true,  baja: false, reportes: false, restablecer: false },
+    Calidad:       { alta: false, prestar: false, calibrar: true,  reparar: false, reincorporar: false, baja: false, reportes: true,  restablecer: false },
   };
 
   const LINEAS = ["Línea 1", "Línea 2", "Línea 3", "Línea 4", "Línea 5", "Línea 6", "Mantenimiento"];
@@ -109,12 +108,7 @@ const DB = (() => {
     mov(30, "Devolución", "TQ-011", "Recibida de Pedro Ruiz (#15530), Línea 5 — CON DAÑO: mecanismo de clic no dispara", "almacen");
     mov(30, "Reparación", "TQ-011", "Mecanismo de clic no dispara. Enviada a mantenimiento.", "almacen");
 
-    const ext = buscarSeed("TQ-013");
-    ext.estado = ESTADOS.EXTRAVIADA;
-    ext.prestamo = { empleado: "15530", operador: "Pedro Ruiz", linea: "Línea 5", fecha: haceHoras(20) };
-    ext.nota = "No fue devuelta al cierre del turno; no se localiza en la línea.";
-    mov(20, "Préstamo", "TQ-013", "Pedro Ruiz (#15530) → Línea 5", "almacen");
-    mov(8, "Extravío", "TQ-013", "Responsable: Pedro Ruiz (#15530), Línea 5. No fue devuelta al cierre del turno; no se localiza en la línea.", "jefe");
+    prestar("TQ-013", "15530", "Pedro Ruiz", "Línea 5", 9);    // excede el turno
 
     movs.sort((a, b) => b.fecha.localeCompare(a.fecha));
     return { herramientas, movimientos: movs };
@@ -134,7 +128,28 @@ const DB = (() => {
   function guardar() {
     try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) { /* almacenamiento no disponible */ }
   }
-  function restablecer() { estado = datosIniciales(); guardar(); }
+  // Vuelve a leer lo guardado, por si otra pestaña hizo cambios.
+  // Si no hay nada guardado o no se puede leer, conserva lo que hay en memoria.
+  function recargar() {
+    try {
+      const txt = localStorage.getItem(CLAVE);
+      if (txt) estado = JSON.parse(txt);
+    } catch (e) { /* se queda con los datos en memoria */ }
+  }
+
+  // ---------- Permisos por rol (Secciones 1.2 y 8) ----------
+  // La regla vive aquí y no solo en la pantalla: si el rol no tiene permiso, la acción se rechaza.
+  function exigirPermiso(usuario, accion) {
+    const u = USUARIOS.find((x) => x.usuario === usuario);
+    if (!u || !PERMISOS[u.rol][accion]) throw new Error("Tu rol no tiene permiso para esta acción.");
+  }
+  // Antes de cualquier cambio: revisa el permiso y parte de los datos más recientes
+  function preparar(usuario, accion) {
+    exigirPermiso(usuario, accion);
+    recargar();
+  }
+
+  function restablecer(usuario) { exigirPermiso(usuario, "restablecer"); estado = datosIniciales(); guardar(); }
 
   function registrarMovimiento(tipo, codigo, detalle, usuario) {
     estado.movimientos.unshift({ fecha: new Date().toISOString(), tipo, codigo, detalle, usuario });
@@ -176,7 +191,6 @@ const DB = (() => {
       vencidas: cuenta((x) => semaforo(x).color === "rojo"),
       porVencer: cuenta((x) => semaforo(x).color === "amarillo"),
       enReparacion: cuenta((x) => x.estado === ESTADOS.REPARACION),
-      extraviadas: cuenta((x) => x.estado === ESTADOS.EXTRAVIADA),
       excedidas: cuenta(excedeTurno),
       bajas: estado.herramientas.length - lista.length,
     };
@@ -223,6 +237,7 @@ const DB = (() => {
 
   // ---------- RF-02: Alta de herramienta ----------
   function altaHerramienta(datos, usuario) {
+    preparar(usuario, "alta");
     const codigo = (datos.codigo || "").trim().toUpperCase();
     const nombre = (datos.nombre || "").trim();
     const min = Number(datos.torqueMin), max = Number(datos.torqueMax);
@@ -247,6 +262,7 @@ const DB = (() => {
 
   // ---------- RF-04: Préstamo (con bloqueo de RF-06) ----------
   function prestar(codigo, datos, usuario) {
+    preparar(usuario, "prestar");
     const herr = obtener(codigo);
     if (herr.estado !== ESTADOS.DISPONIBLE) throw new Error("La herramienta no está disponible.");
     if (semaforo(herr).color === "rojo")
@@ -266,6 +282,7 @@ const DB = (() => {
 
   // ---------- RF-05: Devolución en un clic ----------
   function devolver(codigo, usuario) {
+    preparar(usuario, "prestar");
     const herr = obtener(codigo);
     exigirEstado(herr, ESTADOS.PRESTAMO);
     const p = herr.prestamo;
@@ -278,6 +295,7 @@ const DB = (() => {
 
   // Devolución con daño detectado en la inspección física (Almacenista, Sección 1.2)
   function devolverConDanio(codigo, observacion, usuario) {
+    preparar(usuario, "prestar");
     const herr = obtener(codigo);
     exigirEstado(herr, ESTADOS.PRESTAMO);
     const obs = exigirTexto(observacion, "el daño encontrado");
@@ -293,6 +311,7 @@ const DB = (() => {
 
   // Enviar a reparación externa o mantenimiento (Jefe de almacén)
   function enviarReparacion(codigo, motivo, usuario) {
+    preparar(usuario, "reparar");
     const herr = obtener(codigo);
     exigirEstado(herr, ESTADOS.DISPONIBLE);
     herr.nota = exigirTexto(motivo, "el motivo");
@@ -302,11 +321,12 @@ const DB = (() => {
     return herr;
   }
 
-  // Reincorporar al servicio tras reparación, o herramienta extraviada localizada
+  // Reincorporar al servicio tras reparación (Técnico de mantenimiento → almacén)
   function reincorporar(codigo, usuario) {
+    preparar(usuario, "reincorporar");
     const herr = obtener(codigo);
-    exigirEstado(herr, ESTADOS.REPARACION, ESTADOS.EXTRAVIADA);
-    const detalle = herr.estado === ESTADOS.REPARACION ? "Reparada y reincorporada al servicio" : "Herramienta localizada y devuelta al almacén";
+    exigirEstado(herr, ESTADOS.REPARACION);
+    const detalle = "Reparada y reincorporada al servicio";
     herr.estado = ESTADOS.DISPONIBLE;
     herr.prestamo = null;
     herr.nota = "";
@@ -315,23 +335,11 @@ const DB = (() => {
     return herr;
   }
 
-  // Reportar extravío: se conserva al operador responsable (Problema 3 de la Sección 1.3)
-  function marcarExtraviada(codigo, observacion, usuario) {
-    const herr = obtener(codigo);
-    exigirEstado(herr, ESTADOS.PRESTAMO);
-    const obs = exigirTexto(observacion, "una observación");
-    const p = herr.prestamo;
-    herr.estado = ESTADOS.EXTRAVIADA;
-    herr.nota = obs;
-    registrarMovimiento("Extravío", codigo, `Responsable: ${p.operador} (#${p.empleado}), ${p.linea}. ${obs}`, usuario);
-    guardar();
-    return herr;
-  }
-
   // Baja definitiva (Jefe de almacén)
   function darDeBaja(codigo, motivo, usuario) {
+    preparar(usuario, "baja");
     const herr = obtener(codigo);
-    exigirEstado(herr, ESTADOS.DISPONIBLE, ESTADOS.REPARACION, ESTADOS.EXTRAVIADA);
+    exigirEstado(herr, ESTADOS.DISPONIBLE, ESTADOS.REPARACION);
     herr.nota = exigirTexto(motivo, "el motivo de la baja");
     herr.estado = ESTADOS.BAJA;
     registrarMovimiento("Baja", codigo, herr.nota, usuario);
@@ -341,6 +349,7 @@ const DB = (() => {
 
   // ---------- RF-07: Actualizar calibración ----------
   function actualizarCalibracion(codigo, nuevaFecha, usuario) {
+    preparar(usuario, "calibrar");
     const herr = obtener(codigo);
     if (herr.estado === ESTADOS.BAJA) throw new Error("La herramienta está dada de baja.");
     if (!nuevaFecha) throw new Error("Selecciona la nueva fecha de calibración.");
@@ -366,7 +375,7 @@ const DB = (() => {
     listar, activas, buscar, movimientos, historial, indicadores, reporteUtilizacion,
     semaforo, excedeTurno, horasPrestada,
     altaHerramienta, prestar, devolver, devolverConDanio, enviarReparacion, reincorporar,
-    marcarExtraviada, darDeBaja, actualizarCalibracion,
-    autenticar, permisos, restablecer, sumarDias,
+    darDeBaja, actualizarCalibracion,
+    autenticar, permisos, restablecer, recargar, sumarDias,
   };
 })();

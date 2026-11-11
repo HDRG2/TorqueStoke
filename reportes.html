@@ -9,6 +9,8 @@
   <meta name="apple-mobile-web-app-title" content="TorqueStock">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23e2662f%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-size=%2738%27 font-family=%27Arial%27 font-weight=%27bold%27 fill=%27white%27 text-anchor=%27middle%27%3ET%3C/text%3E%3C/svg%3E">
   <title>TorqueStock — Reportes</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -50,7 +52,7 @@
       <div class="kpi prest"><div class="titulo">En préstamo</div><div class="valor" id="rPrest">0</div></div>
       <div class="kpi venc"><div class="titulo">Calibración vencida</div><div class="valor" id="rVenc">0</div></div>
       <div class="kpi rep"><div class="titulo">En reparación</div><div class="valor" id="rRep">0</div></div>
-      <div class="kpi ext"><div class="titulo">Extraviadas</div><div class="valor" id="rExt">0</div></div>
+      <div class="kpi ext"><div class="titulo">Exceden turno</div><div class="valor" id="rExc">0</div></div>
     </section>
 
     <!-- Utilización -->
@@ -81,7 +83,7 @@
         </div>
       </section>
       <section class="panel seccion-reporte">
-        <div class="panel-cab"><h2>Responsables pendientes (extravíos y préstamos excedidos)</h2></div>
+        <div class="panel-cab"><h2>Préstamos pendientes que exceden el turno</h2></div>
         <div class="tabla-envoltura">
           <table class="tabla-movil">
             <thead><tr><th>Código</th><th>Responsable</th><th>Línea</th><th>Situación</th></tr></thead>
@@ -100,7 +102,7 @@
           <select id="fTipo">
             <option value="">Todos</option>
             <option>Préstamo</option><option>Devolución</option><option>Alta</option><option>Recalibración</option>
-            <option>Reparación</option><option>Reincorporación</option><option>Extravío</option><option>Baja</option>
+            <option>Reparación</option><option>Reincorporación</option><option>Baja</option>
           </select>
         </div>
         <div class="campo"><label for="fDesde">Desde</label><input id="fDesde" type="date"></div>
@@ -120,5 +122,6 @@
   <script src="js/sesion.js"></script>
   <script src="js/util.js"></script>
   <script src="js/reportes.js"></script>
+  <script src="js/pwa.js"></script>
 </body>
 </html>

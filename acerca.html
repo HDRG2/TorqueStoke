@@ -9,6 +9,8 @@
   <meta name="apple-mobile-web-app-title" content="TorqueStock">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23e2662f%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-size=%2738%27 font-family=%27Arial%27 font-weight=%27bold%27 fill=%27white%27 text-anchor=%27middle%27%3ET%3C/text%3E%3C/svg%3E">
   <title>TorqueStock — Acerca del proyecto</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -75,7 +77,7 @@
             <tr><td><b>RF-05</b></td><td>Devoluciones rápidas</td><td>Alta</td><td>2</td><td>Botón “Devolver” en un clic; “Devolver con daño” si falla la inspección física.</td><td class="check">✔</td></tr>
             <tr><td><b>RF-06</b></td><td>Semáforo y bloqueo preventivo</td><td>Alta</td><td>3</td><td>Verde / Amarillo (≤ 15 días) / Rojo; préstamo bloqueado en la interfaz y en la lógica.</td><td class="check">✔</td></tr>
             <tr><td><b>RF-07</b></td><td>Actualización de certificados</td><td>Media</td><td>3</td><td>Botón “Calibración” para Calidad y Jefe; reactiva la etiqueta verde.</td><td class="check">✔</td></tr>
-            <tr><td><b>RF-08</b></td><td>Dashboard de indicadores</td><td>Media</td><td>3</td><td>Tarjetas: total, disponibles, en préstamo, vencidas, en reparación, extraviadas; bitácora reciente.</td><td class="check">✔</td></tr>
+            <tr><td><b>RF-08</b></td><td>Dashboard de indicadores</td><td>Media</td><td>3</td><td>Tarjetas: total, disponibles, en préstamo, vencidas, en reparación, préstamos que exceden el turno; bitácora reciente.</td><td class="check">✔</td></tr>
             <tr><td><b>RNF-01</b></td><td>Usabilidad</td><td>Alta</td><td>2</td><td>Préstamo en 3 clics y devolución en 1; navegación con Enter; manual integrado.</td><td class="check">✔</td></tr>
             <tr><td><b>RNF-02</b></td><td>Rendimiento (&lt; 3 s)</td><td>Alta</td><td>3</td><td>Todo se procesa en el navegador; filtrado y contadores al instante.</td><td class="check">✔</td></tr>
             <tr><td><b>RNF-03</b></td><td>Compatibilidad</td><td>Alta</td><td>1</td><td>HTML/CSS/JS estándar para Chrome, Edge y Firefox en Windows 10/11; sin plugins.</td><td class="check">✔</td></tr>
@@ -93,9 +95,9 @@
           <thead><tr><th>Rol</th><th>Función descrita en el PIA</th><th>Dónde está en el sistema</th></tr></thead>
           <tbody>
             <tr><td rowspan="5"><b>Jefe de almacén</b></td><td>Supervisar inventario y autorizar altas</td><td>Panel + “+ Nueva herramienta”</td></tr>
-            <tr><td>Monitorear disponibles, prestadas y extraviadas</td><td>Tarjetas del Dashboard</td></tr>
+            <tr><td>Monitorear disponibles, prestadas y fuera de turno</td><td>Tarjetas del Dashboard</td></tr>
             <tr><td>Autorizar baja definitiva o reparación externa</td><td>Ficha → “Dar de baja” / “Enviar a reparación”</td></tr>
-            <tr><td>Auditar préstamos no devueltos al final de la jornada</td><td>Alerta “excede el turno” (8 h), filtro “Excede turno”, “Reportar extravío”</td></tr>
+            <tr><td>Auditar préstamos no devueltos al final de la jornada</td><td>Alerta “excede el turno” (8 h), tarjeta y filtro “Excede turno” con el operador responsable</td></tr>
             <tr><td>Reportes ejecutivos de utilización</td><td>Página Reportes (gráficas, CSV, impresión)</td></tr>
             <tr><td rowspan="3"><b>Almacenista</b></td><td>Verificar disponibilidad y calibración antes de entregar</td><td>Semáforo + bloqueo del botón Prestar</td></tr>
             <tr><td>Registrar préstamo con operador y línea</td><td>Botón “Prestar”</td></tr>
@@ -118,7 +120,7 @@
           <tbody>
             <tr><td>1</td><td>No se sabe en tiempo real dónde está cada herramienta ni quién la tiene</td><td>Estado, operador, línea y tiempo de préstamo en la tabla</td></tr>
             <tr><td>2</td><td>Uso de herramientas con calibración vencida</td><td>Semáforo con bloqueo preventivo del préstamo</td></tr>
-            <tr><td>3</td><td>Extravíos y daños sin último responsable</td><td>Extravío y devolución con daño quedan ligados al operador</td></tr>
+            <tr><td>3</td><td>Extravíos y daños sin último responsable</td><td>Cada préstamo queda ligado al operador; alerta si no se devuelve en el turno; la devolución con daño registra al responsable</td></tr>
             <tr><td>4</td><td>Días de retraso en auditorías IATF 16949</td><td>Historial por herramienta y bitácora exportables al instante</td></tr>
             <tr><td>5</td><td>Compras duplicadas por no ver el inventario real</td><td>Dashboard y reporte de inventario en CSV</td></tr>
           </tbody>
@@ -134,5 +136,6 @@
       document.getElementById("btnVolver").textContent = "← Volver al panel";
     }
   </script>
+  <script src="js/pwa.js"></script>
 </body>
 </html>

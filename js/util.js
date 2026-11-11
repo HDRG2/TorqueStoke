@@ -29,7 +29,7 @@ function etiquetaEstado(h, conDetalle = true) {
   const E = DB.ESTADOS;
   const clases = {
     [E.DISPONIBLE]: "est-disponible", [E.PRESTAMO]: "est-prestamo", [E.REPARACION]: "est-reparacion",
-    [E.EXTRAVIADA]: "est-extraviada", [E.BAJA]: "est-baja",
+    [E.BAJA]: "est-baja",
   };
   let html = `<span class="etiqueta ${clases[h.estado] || ""}">${escapar(h.estado)}</span>`;
   if (!conDetalle) return html;
@@ -38,8 +38,6 @@ function etiquetaEstado(h, conDetalle = true) {
     const exc = DB.excedeTurno(h);
     html += `<span class="sub">${escapar(p.operador)} (#${escapar(p.empleado)}) · ${escapar(p.linea)}</span>
              <span class="sub ${exc ? "texto-rojo" : ""}">Hace ${fmtDuracion(DB.horasPrestada(h))}${exc ? " · EXCEDE TURNO" : ""}</span>`;
-  } else if (h.estado === E.EXTRAVIADA && h.prestamo) {
-    html += `<span class="sub">Responsable: ${escapar(h.prestamo.operador)} (#${escapar(h.prestamo.empleado)})</span>`;
   } else if (h.nota) {
     html += `<span class="sub">${escapar(h.nota)}</span>`;
   }

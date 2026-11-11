@@ -9,6 +9,8 @@
   <meta name="apple-mobile-web-app-title" content="TorqueStock">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23e2662f%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-size=%2738%27 font-family=%27Arial%27 font-weight=%27bold%27 fill=%27white%27 text-anchor=%27middle%27%3ET%3C/text%3E%3C/svg%3E">
   <title>TorqueStock — Panel</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -51,9 +53,9 @@
         <div class="titulo">En reparación</div>
         <div class="valor" id="kpiRep">0</div>
       </div>
-      <div class="kpi ext" data-filtro="extraviada" title="Ver extraviadas">
-        <div class="titulo">Extraviadas</div>
-        <div class="valor" id="kpiExt">0</div>
+      <div class="kpi ext" data-filtro="excedida" title="Ver préstamos que exceden el turno">
+        <div class="titulo">Exceden turno</div>
+        <div class="valor" id="kpiExc">0</div>
       </div>
     </section>
 
@@ -80,7 +82,6 @@
             <button class="filtro" data-filtro="porvencer">Por vencer</button>
             <button class="filtro" data-filtro="vencida">Calibración vencida</button>
             <button class="filtro" data-filtro="reparacion">En reparación</button>
-            <button class="filtro" data-filtro="extraviada">Extraviadas</button>
             <button class="filtro" data-filtro="baja">Bajas</button>
           </div>
         </div>
@@ -229,5 +230,6 @@
   <script src="js/sesion.js"></script>
   <script src="js/util.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/pwa.js"></script>
 </body>
 </html>
