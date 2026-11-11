@@ -4,7 +4,7 @@
    vez que se abre; después funciona sin conexión.
    Si cambias algún archivo, sube el número de VERSION.
    ========================================================= */
-const VERSION = "torquestock-v10";
+const VERSION = "torquestock-v11";
 const ARCHIVOS = [
   "./", "./index.html", "./panel.html", "./reportes.html", "./ayuda.html", "./acerca.html",
   "./css/styles.css",
@@ -33,6 +33,7 @@ self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
   const url = new URL(e.request.url);
   if (url.origin !== location.origin) return;
+  if (url.pathname.includes("/api/")) return;   // datos del servidor: siempre directo, nunca de la caché
   e.respondWith(responder(e.request));
 });
 

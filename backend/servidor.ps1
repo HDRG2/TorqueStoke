@@ -1,8 +1,10 @@
 ﻿# =========================================================
-#  TorqueStock - Servidor local (sin internet)
-#  Permite abrir la app desde el celular conectado al mismo
-#  WiFi o al hotspot de la computadora / del celular.
-#  No necesita instalar nada: usa PowerShell de Windows.
+#  TorqueStock - Arranque del servidor (sin internet)
+#  1. Abre el puerto en el Firewall de Windows (solo la primera vez).
+#  2. Si la computadora tiene Python, arranca backend/servidor.py:
+#     base de datos compartida por todos los equipos de la red.
+#  3. Si no tiene Python, sirve los archivos con PowerShell en
+#     modo demostración (cada equipo guarda sus propios datos).
 # =========================================================
 
 $Puerto = 8080
@@ -24,6 +26,24 @@ $regla = "TorqueStock $Puerto"
 if (-not (Get-NetFirewallRule -DisplayName $regla -ErrorAction SilentlyContinue)) {
     New-NetFirewallRule -DisplayName $regla -Direction Inbound -Protocol TCP -LocalPort $Puerto -Action Allow -Profile Any | Out-Null
 }
+
+# --- Servidor completo con Python (base de datos compartida) ---
+$python = $null
+foreach ($candidato in @("python", "py")) {
+    if (Get-Command $candidato -ErrorAction SilentlyContinue) {
+        & $candidato -c "import sqlite3" 2>$null
+        if ($LASTEXITCODE -eq 0) { $python = $candidato; break }
+    }
+}
+if ($python) {
+    & $python "$PSScriptRoot\servidor.py" $Puerto
+    Read-Host "Presiona Enter para cerrar"
+    exit
+}
+Write-Host ""
+Write-Host "  No se encontró Python en esta computadora." -ForegroundColor Yellow
+Write-Host "  Se abre en MODO DEMOSTRACIÓN: cada equipo guarda sus propios datos." -ForegroundColor Yellow
+Write-Host "  Para compartir los datos entre equipos instala Python (python.org) y vuelve a abrir este archivo." -ForegroundColor Yellow
 
 # --- Tipos de archivo ---
 $tipos = @{

@@ -26,7 +26,10 @@ const Sesion = (() => {
   function actual() {
     try { return JSON.parse(leer()); } catch (e) { return null; }
   }
+  // Borra la sesión de este navegador (sin ir a otra página)
+  function olvidar() { escribir(null); }
   function cerrar() {
+    if (typeof DB !== "undefined" && DB.cerrarSesion) DB.cerrarSesion(actual());   // avisa al servidor
     escribir(null);
     window.location.href = "index.html";
   }
@@ -37,5 +40,5 @@ const Sesion = (() => {
     return u;
   }
 
-  return { iniciar, actual, cerrar, exigir };
+  return { iniciar, actual, cerrar, olvidar, exigir };
 })();

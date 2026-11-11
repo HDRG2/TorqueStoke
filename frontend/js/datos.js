@@ -5,8 +5,12 @@
      catalogos.json       Líneas, categorías, días de aviso y horas de turno
      herramientas.json    Inventario inicial
      historial-demo.json  Movimientos de ejemplo
-   Los cambios que se hacen en la app se guardan en el navegador
-   (LocalStorage, Sección 9 del PIA).
+   Dos modos, se elige solo al abrir la página:
+     - Servidor (backend/servidor.py): los datos viven en la base de
+       datos del almacén y los comparten todos los equipos de la red.
+       El servidor revisa contraseñas, permisos y reglas.
+     - Demostración (GitHub Pages u otro servidor de archivos): los
+       cambios se guardan en este navegador (LocalStorage).
    Toda la lógica (semáforo, bloqueo, préstamos, estados)
    vive aquí, separada de la vista (RNF-05: código modular).
    ========================================================= */
@@ -15,6 +19,10 @@ const DB = (() => {
   const CLAVE = "torquestock_db_v3";
   const DATOS = "../backend/data/";
   const ARCHIVOS = ["usuarios.json", "catalogos.json", "herramientas.json", "historial-demo.json"].map((f) => DATOS + f);
+  const API = "../api/";
+  const CADA_MS = 3000;     // cada cuánto se pregunta al servidor si otro equipo hizo cambios
+  let MODO = "demo";        // "servidor" o "demo"
+  let versionDatos = 0;     // número de versión de los datos del servidor
 
   // Estados del ciclo de vida de una herramienta (son parte de la lógica, no de los datos)
   const ESTADOS = {
@@ -86,7 +94,10 @@ const DB = (() => {
       mov(r.horasAtras, "Reparación", r.codigo, r.nota, "almacen");
     });
 
-    movs.sort((a, b) => b.fecha.localeCompare(a.fecha));
+    // Del más nuevo al más viejo; con la misma hora, lo último que se registró va arriba
+    movs.forEach((m, i) => (m.orden = i));
+    movs.sort((a, b) => b.fecha.localeCompare(a.fecha) || b.orden - a.orden);
+    movs.forEach((m) => delete m.orden);
     return { herramientas, movimientos: movs };
   }
 
@@ -103,7 +114,8 @@ const DB = (() => {
   async function iniciar() {
     // Abierta con doble clic: el navegador no deja leer archivos JSON
     if (location.protocol === "file:") throw new Error("ABIERTA_COMO_ARCHIVO");
-    const [usuarios, catalogos, herramientas, demo] = await Promise.all(ARCHIVOS.map(leerJSON));
+    const [usuarios, catalogos, herramientas, demo, hayServidor] =
+      await Promise.all([...ARCHIVOS.map(leerJSON), buscarServidor()]);
     USUARIOS = usuarios.usuarios;
     SEGURIDAD = usuarios.seguridad || {};
     PERMISOS = usuarios.permisos;
@@ -111,8 +123,96 @@ const DB = (() => {
     CATEGORIAS = catalogos.categorias;
     DIAS_AVISO = catalogos.diasAviso;
     HORAS_TURNO = catalogos.horasTurno;
-    semilla = { herramientas, demo };
-    cargar();
+    if (hayServidor) {
+      MODO = "servidor";
+      estado = { herramientas: [], movimientos: [] };
+      if (sesionActual()) { await traerEstado(); vigilarCambios(); }
+    } else {
+      semilla = { herramientas, demo };
+      cargar();
+    }
+  }
+
+  // ---------- Modo servidor ----------
+  const sesionActual = () => (typeof Sesion !== "undefined" ? Sesion.actual() : null);
+
+  // ¿La página viene de backend/servidor.py? (en GitHub Pages esta dirección no existe)
+  async function buscarServidor() {
+    try {
+      const r = await fetch(API + "ping", { cache: "no-store" });
+      return r.ok && (await r.json()).servidor === "TorqueStock";
+    } catch (e) { return false; }
+  }
+
+  async function api(ruta, { metodo = "GET", cuerpo, conSesion = true } = {}) {
+    const u = sesionActual();
+    const encabezados = { "Content-Type": "application/json" };
+    if (u && u.token) encabezados.Authorization = `Bearer ${u.token}`;
+    let r;
+    try {
+      r = await fetch(API + ruta, {
+        method: metodo, cache: "no-store", headers: encabezados,
+        body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
+      });
+    } catch (e) {
+      conexion(false);
+      throw new Error("No hay conexión con el servidor del almacén. Revisa la red e intenta de nuevo.");
+    }
+    conexion(true);
+    let datos = {};
+    try { datos = await r.json(); } catch (e) { /* respuesta vacía */ }
+    if (r.status === 401 && conSesion) {
+      // La sesión ya no es válida (expiró o se borró la base): de vuelta al login
+      Sesion.olvidar();
+      window.location.replace("index.html");
+      return new Promise(() => {});   // no sigue ni muestra errores: la página ya se va al login
+    }
+    if (!r.ok) throw new Error(datos.error || `Error del servidor (${r.status}).`);
+    return datos;
+  }
+
+  function aplicar(r) {
+    estado = { herramientas: r.herramientas, movimientos: r.movimientos };
+    versionDatos = r.version;
+  }
+  async function traerEstado() { aplicar(await api("estado")); }
+
+  // Cada pocos segundos pregunta si hubo cambios en otro equipo; si los hay, avisa a la página
+  function vigilarCambios() {
+    let revisando = false;
+    const revisar = async () => {
+      if (revisando || document.hidden || !sesionActual()) return;
+      revisando = true;
+      try {
+        const { version } = await api("version");
+        if (version !== versionDatos) {
+          await traerEstado();
+          window.dispatchEvent(new Event("torquestock:datos"));
+        }
+      } catch (e) { /* sin red: ya se muestra el aviso de conexión */ }
+      revisando = false;
+    };
+    setInterval(revisar, CADA_MS);
+    document.addEventListener("visibilitychange", revisar);
+  }
+
+  // Aviso fijo mientras no hay conexión con el servidor
+  function conexion(ok) {
+    let barra = document.getElementById("avisoConexion");
+    if (ok) { if (barra) barra.remove(); return; }
+    if (barra || !document.body) return;
+    barra = document.createElement("div");
+    barra.id = "avisoConexion";
+    barra.className = "aviso-conexion";
+    barra.setAttribute("role", "alert");
+    barra.textContent = "Sin conexión con el servidor del almacén. Reintentando…";
+    document.body.appendChild(barra);
+  }
+
+  async function accionServidor(accion, codigo, datos) {
+    const r = await api("accion", { metodo: "POST", cuerpo: { accion, codigo, datos } });
+    aplicar(r);
+    return r.codigo ? buscar(r.codigo) : null;
   }
 
   // Aviso a pantalla completa cuando los datos no se pueden cargar
@@ -163,6 +263,7 @@ const DB = (() => {
   // Vuelve a leer lo guardado, por si otra pestaña hizo cambios.
   // Si no hay nada guardado o no se puede leer, conserva lo que hay en memoria.
   function recargar() {
+    if (MODO === "servidor") return;   // en modo servidor los datos ya llegan actualizados
     try {
       const txt = localStorage.getItem(CLAVE);
       if (txt) estado = JSON.parse(txt);
@@ -396,12 +497,44 @@ const DB = (() => {
   // ---------- RF-01: Autenticación ----------
   // La contraseña no se guarda: se cifra lo que escribió el usuario con su sal y se compara con el hash.
   async function autenticar(usuario, clave) {
+    if (MODO === "servidor") {
+      try {
+        return await api("login", { metodo: "POST", cuerpo: { usuario, clave }, conSesion: false });
+      } catch (e) {
+        if (/incorrectos/.test(e.message)) return null;
+        throw e;
+      }
+    }
     const u = USUARIOS.find((x) => x.usuario === usuario.trim().toLowerCase());
     // Si el usuario no existe se cifra de todos modos: así tarda lo mismo y no revela qué usuarios existen
     const hash = await Cifrado.derivar(clave, (u && u.sal) || "00".repeat(16), SEGURIDAD.iteraciones || 100000);
     return u && u.hash && Cifrado.iguales(hash, u.hash) ? { usuario: u.usuario, nombre: u.nombre, rol: u.rol } : null;
   }
   const permisos = (rol) => PERMISOS[rol] || {};
+
+  // Avisa al servidor que la sesión terminó (la página se va al login de inmediato)
+  function cerrarSesion(u) {
+    if (MODO !== "servidor" || !u || !u.token) return;
+    try {
+      fetch(API + "logout", { method: "POST", keepalive: true, body: "{}",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${u.token}` } });
+    } catch (e) { /* no importa: la sesión expira sola */ }
+  }
+
+  // ---------- Acciones: en modo servidor las hace el servidor; en demostración, este navegador ----------
+  // Todas devuelven una promesa para que la página las use igual en los dos modos.
+  const enServidor = () => MODO === "servidor";
+  const acciones = {
+    altaHerramienta: async (datos, u) => enServidor() ? accionServidor("alta", null, datos) : altaHerramienta(datos, u),
+    prestar: async (c, datos, u) => enServidor() ? accionServidor("prestar", c, datos) : prestar(c, datos, u),
+    devolver: async (c, u) => enServidor() ? accionServidor("devolver", c) : devolver(c, u),
+    devolverConDanio: async (c, t, u) => enServidor() ? accionServidor("devolverConDanio", c, { texto: t }) : devolverConDanio(c, t, u),
+    enviarReparacion: async (c, t, u) => enServidor() ? accionServidor("reparar", c, { texto: t }) : enviarReparacion(c, t, u),
+    reincorporar: async (c, u) => enServidor() ? accionServidor("reincorporar", c) : reincorporar(c, u),
+    darDeBaja: async (c, t, u) => enServidor() ? accionServidor("baja", c, { texto: t }) : darDeBaja(c, t, u),
+    actualizarCalibracion: async (c, f, u) => enServidor() ? accionServidor("calibrar", c, { fecha: f }) : actualizarCalibracion(c, f, u),
+    restablecer: async (u) => enServidor() ? accionServidor("restablecer") : restablecer(u),
+  };
 
   return {
     listo, ESTADOS,
@@ -412,8 +545,8 @@ const DB = (() => {
     get HORAS_TURNO() { return HORAS_TURNO; },
     listar, activas, buscar, movimientos, historial, indicadores, reporteUtilizacion,
     semaforo, excedeTurno, horasPrestada,
-    altaHerramienta, prestar, devolver, devolverConDanio, enviarReparacion, reincorporar,
-    darDeBaja, actualizarCalibracion,
-    autenticar, permisos, restablecer, recargar, sumarDias,
+    ...acciones,
+    get modo() { return MODO; },
+    autenticar, cerrarSesion, permisos, recargar, sumarDias,
   };
 })();

@@ -127,6 +127,8 @@ window.addEventListener("storage", (e) => {
   if (e.key && !e.key.startsWith("torquestock_db")) return;
   window.location.reload();
 });
+// Modo servidor: otro equipo hizo un cambio
+window.addEventListener("torquestock:datos", () => window.location.reload());
 
 if (dentroDeMarco) $("btnImprimir").classList.add("oculto");
 $("btnImprimir").onclick = () => window.print();

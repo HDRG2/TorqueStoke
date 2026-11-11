@@ -34,6 +34,7 @@
       </div>
       <div class="error-form" id="errorLogin"></div>
       <button class="btn btn-naranja btn-bloque" type="submit">Iniciar sesión</button>
+      <p class="login-modo" id="loginModo" hidden></p>
 
       <div class="login-demo">
         <strong>Usuarios de prueba:</strong><br>
@@ -103,6 +104,17 @@
     });
     // Enter en "Contraseña" envía el formulario (comportamiento normal) y se valida abajo
 
+    // Indica si la página está conectada al servidor del almacén o en modo demostración
+    DB.listo.then(() => {
+      const modo = document.getElementById("loginModo");
+      const servidor = DB.modo === "servidor";
+      modo.className = `login-modo ${servidor ? "conectado" : "demo"}`;
+      modo.textContent = servidor
+        ? "Conectado al servidor del almacén"
+        : "Modo demostración: los cambios se guardan solo en este navegador";
+      modo.hidden = false;
+    }).catch(() => {});
+
     document.getElementById("formLogin").addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -122,9 +134,12 @@
       boton.disabled = true;
       boton.textContent = "Verificando…";
       await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));   // deja que se vea el mensaje
-      const u = await DB.autenticar(usuario.value, clave.value);
+      let u;
+      try { u = await DB.autenticar(usuario.value, clave.value); }
+      catch (err) { error.textContent = err.message; }   // p. ej. sin conexión con el servidor
       boton.disabled = false;
       boton.textContent = "Iniciar sesión";
+      if (u === undefined) return;
       if (!u) {
         error.textContent = "Usuario o contraseña incorrectos.";
         clave.value = "";

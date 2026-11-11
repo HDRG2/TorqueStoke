@@ -213,12 +213,22 @@ $("btnExportFicha").onclick = () => {
 };
 
 // ---------- Acciones ----------
+// Evita mandar dos veces la misma acción con doble clic mientras responde el servidor
+let ocupado = false;
+async function unaVez(fn) {
+  if (ocupado) return;
+  ocupado = true;
+  try { await fn(); } finally { ocupado = false; }
+}
+
 function ejecutarDirecto(fn, mensaje) {
-  try {
-    fn();
-    avisar(mensaje, "ok");
+  return unaVez(async () => {
+    try {
+      await fn();
+      avisar(mensaje, "ok");
+    } catch (err) { avisar(err.message, "error"); }
     refrescar();
-  } catch (err) { avisar(err.message, "error"); }
+  });
 }
 
 // Configuración de las acciones que piden motivo u observación
@@ -311,15 +321,15 @@ $("formAlta").addEventListener("submit", (e) => {
   e.preventDefault();
   const ids = ["altaCodigo", "altaCategoria", "altaNombre", "altaMin", "altaMax", "altaFecha"];
   if (!validarVacios(ids)) { $("errorAlta").textContent = "Completa todos los campos marcados."; return; }
-  try {
-    const h = DB.altaHerramienta({
+  unaVez(async () => { try {
+    const h = await DB.altaHerramienta({
       codigo: $("altaCodigo").value, categoria: $("altaCategoria").value, nombre: $("altaNombre").value,
       torqueMin: $("altaMin").value, torqueMax: $("altaMax").value, proximaCalibracion: $("altaFecha").value,
     }, usuario.usuario);
     cerrarModal("modalAlta");
     avisar(`Herramienta ${h.codigo} registrada.`, "ok");
     refrescar();
-  } catch (err) { $("errorAlta").textContent = err.message; }
+  } catch (err) { $("errorAlta").textContent = err.message; } });
 });
 
 // RF-04: préstamo — el número de empleado solo acepta dígitos
@@ -329,26 +339,26 @@ $("formPrestamo").addEventListener("submit", (e) => {
   if (!validarVacios(["presEmpleado", "presLinea", "presOperador"])) {
     $("errorPrestamo").textContent = "Captura número de empleado, línea y nombre."; return;
   }
-  try {
-    DB.prestar(codigoSeleccionado, {
+  unaVez(async () => { try {
+    await DB.prestar(codigoSeleccionado, {
       empleado: $("presEmpleado").value, operador: $("presOperador").value, linea: $("presLinea").value,
     }, usuario.usuario);
     cerrarModal("modalPrestamo");
     avisar(`${codigoSeleccionado} prestada correctamente.`, "ok");
     refrescar();
-  } catch (err) { $("errorPrestamo").textContent = err.message; }
+  } catch (err) { $("errorPrestamo").textContent = err.message; } });
 });
 
 // RF-07: actualizar calibración
 $("formCalib").addEventListener("submit", (e) => {
   e.preventDefault();
   if (!validarVacios(["calibFecha"])) { $("errorCalib").textContent = "Selecciona una fecha."; return; }
-  try {
-    DB.actualizarCalibracion(codigoSeleccionado, $("calibFecha").value, usuario.usuario);
+  unaVez(async () => { try {
+    await DB.actualizarCalibracion(codigoSeleccionado, $("calibFecha").value, usuario.usuario);
     cerrarModal("modalCalib");
     avisar(`Calibración de ${codigoSeleccionado} actualizada.`, "ok");
     refrescar();
-  } catch (err) { $("errorCalib").textContent = err.message; }
+  } catch (err) { $("errorCalib").textContent = err.message; } });
 });
 
 // Acciones con motivo (daño, reparación, baja)
@@ -357,17 +367,17 @@ $("formMotivo").addEventListener("submit", (e) => {
   const cfg = ACCIONES_MOTIVO[accionMotivo];
   if (!cfg) return;
   if (!validarVacios(["motivoTexto"])) { $("errorMotivo").textContent = "Este campo es obligatorio."; return; }
-  try {
-    cfg.fn(codigoSeleccionado, $("motivoTexto").value);
+  unaVez(async () => { try {
+    await cfg.fn(codigoSeleccionado, $("motivoTexto").value);
     cerrarModal("modalMotivo");
     avisar(cfg.ok(codigoSeleccionado), "ok");
     refrescar();
-  } catch (err) { $("errorMotivo").textContent = err.message; }
+  } catch (err) { $("errorMotivo").textContent = err.message; } });
 });
 
 $("btnRestablecer").onclick = async () => {
   if (await confirmar("¿Restablecer todos los datos a los de ejemplo? Se perderán los cambios.", "Restablecer")) {
-    try { DB.restablecer(usuario.usuario); } catch (err) { avisar(err.message, "error"); return; }
+    try { await DB.restablecer(usuario.usuario); } catch (err) { avisar(err.message, "error"); return; }
     avisar("Datos de demostración restablecidos.");
     refrescar();
   }
@@ -378,6 +388,11 @@ window.addEventListener("storage", (e) => {
   if (e.key && !e.key.startsWith("torquestock_db")) return;
   DB.recargar();
   refrescar();
+});
+// Modo servidor: otro equipo hizo un cambio (préstamo, devolución…)
+window.addEventListener("torquestock:datos", () => {
+  refrescar();
+  if ($("modalFicha").classList.contains("abierto") && DB.buscar(codigoSeleccionado)) pintarFicha(codigoSeleccionado);
 });
 
 refrescar();

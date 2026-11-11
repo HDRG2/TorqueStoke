@@ -1,0 +1,3 @@
+backend/torquestock.db
+backend/torquestock.db-journal
+__pycache__/
