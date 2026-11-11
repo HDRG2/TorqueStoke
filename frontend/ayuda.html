@@ -17,27 +17,15 @@
   <header class="barra-sup">
     <div class="marca">
       <div class="icono">T</div>
-      <div>TorqueStock <small>Manual de usuario</small></div>
+      <div>TorqueStock <small id="subtituloManual">Manual de usuario</small></div>
     </div>
     <div class="usuario-info">
+      <button type="button" class="btn btn-borde btn-sm" id="btnImprimirManual">Imprimir / PDF</button>
       <a class="btn btn-borde btn-sm" id="btnVolver" href="index.html">← Volver</a>
     </div>
   </header>
 
   <div class="contenedor manual">
-    <!-- Selector de manual por rol -->
-    <div class="panel manual-selector no-imprimir">
-      <div class="panel-cuerpo">
-        <span class="manual-selector-titulo">Ver manual para:</span>
-        <div class="filtros" role="group" aria-label="Manual por rol">
-          <button type="button" class="filtro" data-rol="">Todos</button>
-          <button type="button" class="filtro" data-rol="Administrador">Jefe de almacén</button>
-          <button type="button" class="filtro" data-rol="Almacenista">Almacenista</button>
-          <button type="button" class="filtro" data-rol="Calidad">Ingeniero de calidad</button>
-        </div>
-        <button type="button" class="btn btn-borde btn-sm" id="btnImprimirManual">Imprimir / PDF</button>
-      </div>
-    </div>
 
     <!-- Índice -->
     <nav class="panel manual-indice">
@@ -327,40 +315,30 @@
       if (fila) fila.classList.add("mi-rol");
     }
 
-    // ---------- Manual por rol ----------
-    // Cada sección tiene data-roles con los roles que la usan. Al elegir un rol se ocultan las demás.
+    // ---------- Manual por rol (automático) ----------
+    // Cada sección tiene data-roles con los roles que la usan; se ocultan las que no son del rol.
+    // Rol: el de la sesión. Sin sesión, el de la dirección (?rol=Almacenista); si tampoco, el manual completo.
     const NOMBRES = { Administrador: "Jefe de almacén", Almacenista: "Almacenista", Calidad: "Ingeniero de calidad" };
-    const titulos = [...document.querySelectorAll(".manual-contenido section h2")];
-    titulos.forEach((h) => (h.dataset.titulo = h.textContent.replace(/^\d+\.\s*/, "")));
+    let rol = u ? u.rol : new URLSearchParams(location.search).get("rol");
+    if (!NOMBRES[rol]) rol = "";
 
-    function mostrarManual(rol) {
-      if (!NOMBRES[rol]) rol = "";
+    if (rol) {
       document.querySelectorAll("[data-roles]").forEach((el) =>
-        el.classList.toggle("oculto", !!rol && !el.dataset.roles.split(" ").includes(rol)));
-      document.querySelectorAll(".manual-selector .filtro").forEach((b) =>
-        b.classList.toggle("activo", b.dataset.rol === rol));
+        el.classList.toggle("oculto", !el.dataset.roles.split(" ").includes(rol)));
 
       // Numera de nuevo solo las secciones visibles (1, 2, 3… sin saltos)
       let n = 0;
-      titulos.forEach((h) => {
-        if (!h.closest("section").classList.contains("oculto")) h.textContent = `${++n}. ${h.dataset.titulo}`;
+      document.querySelectorAll(".manual-contenido section").forEach((s) => {
+        if (s.classList.contains("oculto")) return;
+        const h = s.querySelector("h2");
+        h.textContent = `${++n}. ${h.textContent.replace(/^\d+\.\s*/, "")}`;
       });
-
-      const nombre = rol ? `del ${NOMBRES[rol]}` : "de usuario";
-      document.getElementById("tituloImpresion").textContent = `TorqueStock — Manual ${nombre}`;
-      document.title = `TorqueStock — Manual ${nombre}`;
-
-      // Guarda el rol en la dirección (?rol=Almacenista) para poder compartir el link de cada manual
-      const url = new URL(location.href);
-      if (rol) url.searchParams.set("rol", rol); else url.searchParams.delete("rol");
-      history.replaceState(null, "", url);
     }
 
-    document.querySelectorAll(".manual-selector .filtro").forEach((b) =>
-      b.addEventListener("click", () => mostrarManual(b.dataset.rol)));
-
-    // Rol inicial: el de la dirección, si no el de la sesión, si no "Todos"
-    mostrarManual(new URLSearchParams(location.search).get("rol") ?? (u ? u.rol : ""));
+    const nombre = rol ? `del ${NOMBRES[rol]}` : "de usuario";
+    document.getElementById("subtituloManual").textContent = `Manual ${nombre}`;
+    document.getElementById("tituloImpresion").textContent = `TorqueStock — Manual ${nombre}`;
+    document.title = `TorqueStock — Manual ${nombre}`;
 
     // Imprimir / PDF (no se permite cuando la página está dentro de otra, como en claude.ai)
     const btnImprimir = document.getElementById("btnImprimirManual");
