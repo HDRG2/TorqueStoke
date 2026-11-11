@@ -4,7 +4,7 @@
    vez que se abre; después funciona sin conexión.
    Si cambias algún archivo, sube el número de VERSION.
    ========================================================= */
-const VERSION = "torquestock-v4";
+const VERSION = "torquestock-v5";
 const ARCHIVOS = [
   "./", "./index.html", "./panel.html", "./reportes.html", "./ayuda.html", "./acerca.html",
   "./css/styles.css",

@@ -7,7 +7,11 @@ const $ = (id) => document.getElementById(id);
 const escapar = (t) => String(t ?? "").replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-const fmtFecha = (iso) => { const [a, m, d] = iso.slice(0, 10).split("-"); return `${d}/${m}/${a}`; };
+// Texto para buscar: sin acentos, sin mayúsculas y con espacios simples ("Línea  2" → "linea 2")
+const normalizar = (t) => String(t ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "")
+  .toLowerCase().replace(/\s+/g, " ").trim();
+
+const fmtFecha =(iso) => { const [a, m, d] = iso.slice(0, 10).split("-"); return `${d}/${m}/${a}`; };
 const fmtFechaHora = (iso) => new Date(iso).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" });
 
 function fmtDuracion(horas) {

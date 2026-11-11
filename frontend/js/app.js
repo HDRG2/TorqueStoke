@@ -105,8 +105,8 @@ function cumpleFiltro(h) {
 function cumpleBusqueda(h, texto) {
   if (!texto) return true;
   const p = h.prestamo || {};
-  return [h.codigo, h.nombre, h.categoria, h.estado, h.nota, p.operador, p.empleado, p.linea]
-    .filter(Boolean).join(" ").toLowerCase().includes(texto);
+  return normalizar([h.codigo, h.nombre, h.categoria, h.estado, h.nota, p.operador, p.empleado, p.linea]
+    .filter(Boolean).join(" ")).includes(texto);
 }
 
 // Todas las acciones disponibles para la herramienta según su estado y el rol
@@ -148,7 +148,7 @@ function botonesFila(h) {
 }
 
 function pintarTabla() {
-  const texto = $("buscador").value.trim().toLowerCase();
+  const texto = normalizar($("buscador").value);
   const lista = DB.listar().filter((h) => cumpleFiltro(h) && cumpleBusqueda(h, texto));
 
   $("tablaCuerpo").innerHTML = lista.length

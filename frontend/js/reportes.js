@@ -73,7 +73,7 @@ $("tablaResponsables").innerHTML = pendientes.length
 
 // ---------- Bitácora completa con filtros ----------
 function movsFiltrados() {
-  const texto = $("fTexto").value.trim().toLowerCase();
+  const texto = normalizar($("fTexto").value);
   const tipo = $("fTipo").value;
   const desde = $("fDesde").value;
   const hasta = $("fHasta").value;
@@ -83,7 +83,7 @@ function movsFiltrados() {
     if (tipo && m.tipo !== tipo) return false;
     if (desde && diaISO < desde) return false;
     if (hasta && diaISO > hasta) return false;
-    if (texto && !`${m.codigo} ${m.tipo} ${m.detalle} ${m.usuario}`.toLowerCase().includes(texto)) return false;
+    if (texto && !normalizar(`${m.codigo} ${m.tipo} ${m.detalle} ${m.usuario}`).includes(texto)) return false;
     return true;
   });
 }
