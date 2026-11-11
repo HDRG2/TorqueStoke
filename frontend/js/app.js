@@ -51,6 +51,7 @@ $("btnSalir").onclick = () => Sesion.cerrar();
 if (puede.alta) $("btnNueva").classList.remove("oculto");
 if (puede.restablecer) $("btnRestablecer").classList.remove("oculto");
 if (puede.reportes) $("lnkReportes").classList.remove("oculto");
+if (puede.acerca) $("lnkAcerca").classList.remove("oculto");
 
 $("altaCategoria").innerHTML = '<option value="">Selecciona…</option>' + DB.CATEGORIAS.map((c) => `<option>${c}</option>`).join("");
 $("presLinea").innerHTML = '<option value="">Selecciona…</option>' + DB.LINEAS.map((l) => `<option>${l}</option>`).join("");

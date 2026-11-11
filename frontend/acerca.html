@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body hidden>
   <header class="barra-sup">
   <div class="barra-contenido">
     <div class="marca">
@@ -136,12 +136,20 @@
     </section>
   </div>
 
+  <script src="js/datos.js"></script>
   <script src="js/sesion.js"></script>
-  <script>
-    if (Sesion.actual()) {
-      document.getElementById("btnVolver").href = "panel.html";
-      document.querySelector("#btnVolver span").textContent = "Volver al panel";
+  <script type="module">
+    // Solo el Jefe de almacén puede ver esta página (permiso "acerca")
+    const usuario = Sesion.exigir();
+    if (!usuario) throw new Error("Sin sesión activa");
+    await DB.listo;
+    if (!DB.permisos(usuario.rol).acerca) {
+      window.location.replace("panel.html");
+      throw new Error("Sin permiso para Acerca");
     }
+    document.getElementById("btnVolver").href = "panel.html";
+    document.querySelector("#btnVolver span").textContent = "Volver al panel";
+    document.body.hidden = false;
   </script>
   <script src="js/pwa.js"></script>
 </body>

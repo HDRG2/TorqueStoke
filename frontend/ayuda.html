@@ -307,7 +307,7 @@
         </div>
       </section>
 
-      <p class="manual-pie"><a href="acerca.html">Acerca del proyecto</a> · TorqueStock · Grupo Industrial Par-Tec · PIA FACPYA UANL · Equipo OOZMA KAPPA</p>
+      <p class="manual-pie"><span id="lnkAcerca" hidden><a href="acerca.html">Acerca del proyecto</a> · </span>TorqueStock · Grupo Industrial Par-Tec · PIA FACPYA UANL · Equipo OOZMA KAPPA</p>
     </main>
   </div>
 
@@ -320,6 +320,7 @@
       document.querySelector("#btnVolver span").textContent = "Volver al panel";
       const fila = document.querySelector(`tr[data-rol="${u.rol}"]`);
       if (fila) fila.classList.add("mi-rol");
+      if (u.rol === "Administrador") document.getElementById("lnkAcerca").hidden = false;
     }
 
     // ---------- Manual por rol (automático) ----------

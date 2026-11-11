@@ -60,7 +60,7 @@ TorqueStock/
 │   ├── panel.html          Panel: KPIs, alerta de turno, inventario, ficha/historial, bitácora
 │   ├── reportes.html       Reportes de utilización, agenda de calibración, bitácora, CSV e impresión
 │   ├── ayuda.html          Manual de usuario
-│   ├── acerca.html         Ficha del proyecto, equipo y trazabilidad de requerimientos
+│   ├── acerca.html         Ficha del proyecto, equipo y trazabilidad (solo Jefe de almacén)
 │   ├── css/styles.css      Estilos, diseño responsivo (RNF-04) e impresión
 │   ├── js/datos.js         Carga de los JSON y reglas de negocio: semáforo, bloqueo, estados, permisos (RNF-05)
 │   ├── js/sesion.js        Manejo de sesión
