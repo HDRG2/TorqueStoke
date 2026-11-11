@@ -46,6 +46,7 @@
     </form>
   </main>
 
+  <script src="js/cifrado.js"></script>
   <script src="js/datos.js"></script>
   <script src="js/sesion.js"></script>
   <script>
@@ -117,7 +118,13 @@
         return;
       }
 
-      const u = DB.autenticar(usuario.value, clave.value);
+      const boton = e.submitter || document.querySelector("#formLogin button[type=submit]");
+      boton.disabled = true;
+      boton.textContent = "Verificando…";
+      await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));   // deja que se vea el mensaje
+      const u = await DB.autenticar(usuario.value, clave.value);
+      boton.disabled = false;
+      boton.textContent = "Iniciar sesión";
       if (!u) {
         error.textContent = "Usuario o contraseña incorrectos.";
         clave.value = "";

@@ -26,6 +26,7 @@ const DB = (() => {
 
   // Se llenan al leer los archivos JSON
   let USUARIOS = [];        // Sección 8: clases de usuarios
+  let SEGURIDAD = {};       // Cómo se cifran las contraseñas (algoritmo e iteraciones)
   let PERMISOS = {};        // Qué puede hacer cada rol (Secciones 1.2 y 8)
   let LINEAS = [];
   let CATEGORIAS = [];
@@ -104,6 +105,7 @@ const DB = (() => {
     if (location.protocol === "file:") throw new Error("ABIERTA_COMO_ARCHIVO");
     const [usuarios, catalogos, herramientas, demo] = await Promise.all(ARCHIVOS.map(leerJSON));
     USUARIOS = usuarios.usuarios;
+    SEGURIDAD = usuarios.seguridad || {};
     PERMISOS = usuarios.permisos;
     LINEAS = catalogos.lineas;
     CATEGORIAS = catalogos.categorias;
@@ -392,9 +394,12 @@ const DB = (() => {
   }
 
   // ---------- RF-01: Autenticación ----------
-  function autenticar(usuario, clave) {
-    const u = USUARIOS.find((x) => x.usuario === usuario.trim().toLowerCase() && x.clave === clave);
-    return u ? { usuario: u.usuario, nombre: u.nombre, rol: u.rol } : null;
+  // La contraseña no se guarda: se cifra lo que escribió el usuario con su sal y se compara con el hash.
+  async function autenticar(usuario, clave) {
+    const u = USUARIOS.find((x) => x.usuario === usuario.trim().toLowerCase());
+    // Si el usuario no existe se cifra de todos modos: así tarda lo mismo y no revela qué usuarios existen
+    const hash = await Cifrado.derivar(clave, (u && u.sal) || "00".repeat(16), SEGURIDAD.iteraciones || 100000);
+    return u && u.hash && Cifrado.iguales(hash, u.hash) ? { usuario: u.usuario, nombre: u.nombre, rol: u.rol } : null;
   }
   const permisos = (rol) => PERMISOS[rol] || {};
 

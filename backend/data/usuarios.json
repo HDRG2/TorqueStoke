@@ -1,8 +1,12 @@
 {
+  "seguridad": { "algoritmo": "PBKDF2-SHA256", "iteraciones": 100000 },
   "usuarios": [
-    { "usuario": "jefe",    "clave": "jefe123",    "nombre": "Jefe de Almacén",     "rol": "Administrador" },
-    { "usuario": "almacen", "clave": "almacen123", "nombre": "Almacenista Turno 1", "rol": "Almacenista" },
-    { "usuario": "calidad", "clave": "calidad123", "nombre": "Ing. de Calidad",     "rol": "Calidad" }
+    { "usuario": "jefe", "nombre": "Jefe de Almacén", "rol": "Administrador",
+      "sal": "c1b1d5168372d070da06b9d713525eb6", "hash": "5abdd9f35917650a5f62db3abcb65b6ec90468499f4ea7018cbb204c08ec24df" },
+    { "usuario": "almacen", "nombre": "Almacenista Turno 1", "rol": "Almacenista",
+      "sal": "dd4aa51f252b98dda191fc799ae52aa2", "hash": "09d22ddcb0b43b084433d7af840b91a1e743507a9fc7c32eff1d856257af196f" },
+    { "usuario": "calidad", "nombre": "Ing. de Calidad", "rol": "Calidad",
+      "sal": "128ae1afab7842ee50f209c492e02887", "hash": "6b25f0d07e32363871d669e1413531b01757f8bc1468df2e6bdee6c0e1f3427a" }
   ],
   "permisos": {
     "Administrador": { "alta": true,  "prestar": true,  "calibrar": true,  "reparar": true,  "reincorporar": true,  "baja": true,  "reportes": true,  "acerca": true,  "restablecer": true },

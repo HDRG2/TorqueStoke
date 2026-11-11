@@ -25,12 +25,18 @@ Los cambios que haces en la app se guardan en el navegador (LocalStorage). El Je
 
 | Archivo | Contenido |
 |---|---|
-| `usuarios.json` | Usuarios, contraseñas y permisos por rol |
+| `usuarios.json` | Usuarios, contraseñas **cifradas** y permisos por rol |
 | `catalogos.json` | Líneas de producción, categorías, días de aviso del semáforo (15) y horas del turno (8) |
 | `herramientas.json` | Inventario inicial |
 | `historial-demo.json` | Préstamos, devoluciones, recalibraciones y reparaciones de ejemplo |
 
 Las fechas son **relativas** para que la demo nunca se vea vieja: `"diasParaCalibracion": 9` significa "vence dentro de 9 días" y `"horasAtras": 2` significa "hace 2 horas"; un número negativo es una fecha que ya pasó.
+
+## Usuarios y contraseñas
+
+Las contraseñas **no se guardan**: `usuarios.json` solo tiene una *sal* aleatoria y el *hash* de cada contraseña (PBKDF2-SHA256, 100 000 repeticiones). Al iniciar sesión, la app cifra lo que escribió el usuario con su sal y compara el resultado con el hash (`frontend/js/cifrado.js`).
+
+**Registrar un empleado o cambiar su contraseña:** doble clic en `Registrar usuario.bat`. Pide usuario, nombre, rol y contraseña (dos veces, sin mostrarla), la cifra y la guarda en `usuarios.json`. Después sube el cambio (commit y push) para que lo vean los demás equipos.
 
 **Cómo aplicar cambios a los JSON:** el navegador conserva los datos que ya tenía guardados, así que, después de editar un archivo, entra como Jefe y presiona **Restablecer demo**. Los cambios a `usuarios.json` y `catalogos.json` se ven con solo recargar la página.
 ## Uso sin internet
@@ -53,6 +59,7 @@ Las fechas son **relativas** para que la demo nunca se vea vieja: `"diasParaCali
 TorqueStock/
 ├── index.html              Solo redirige a frontend/ (mantiene el link de GitHub Pages)
 ├── Iniciar servidor.bat    Doble clic para arrancar el servidor local
+├── Registrar usuario.bat   Doble clic para dar de alta un empleado o cambiar su contraseña
 ├── README.md
 │
 ├── frontend/               Lo que corre en el navegador
@@ -64,6 +71,7 @@ TorqueStock/
 │   ├── css/styles.css      Estilos, diseño responsivo (RNF-04) e impresión
 │   ├── js/datos.js         Carga de los JSON y reglas de negocio: semáforo, bloqueo, estados, permisos (RNF-05)
 │   ├── js/sesion.js        Manejo de sesión
+│   ├── js/cifrado.js       Cifrado de contraseñas (PBKDF2-SHA256)
 │   ├── js/util.js          Utilidades de interfaz (etiquetas, fechas, CSV)
 │   ├── js/app.js           Lógica del panel
 │   ├── js/reportes.js      Lógica de reportes
@@ -74,6 +82,7 @@ TorqueStock/
 │
 └── backend/                Servidor y datos
     ├── servidor.ps1        Servidor local: entrega frontend/ y backend/data/ en la red
+    ├── registrar-usuario.ps1  Registra empleados con la contraseña cifrada
     └── data/               Datos iniciales en JSON: usuarios, catálogos, inventario e historial de ejemplo
 ```
 
@@ -83,7 +92,7 @@ TorqueStock/
 
 | ID | Dónde |
 |---|---|
-| RF-01 Login | `frontend/index.html` (máx. 15 caracteres, solo letras y números, Enter para avanzar), permisos por rol |
+| RF-01 Login | `frontend/index.html` (máx. 15 caracteres, solo letras y números, Enter para avanzar), contraseñas cifradas, permisos por rol |
 | RF-02 Alta | **+ Nueva herramienta** (Jefe) |
 | RF-03 Búsqueda y filtros | Buscador + filtros por estado, semáforo y turno |
 | RF-04 Préstamos | **Prestar** → empleado, nombre, línea |
