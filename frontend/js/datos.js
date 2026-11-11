@@ -1,6 +1,6 @@
 /* =========================================================
    TorqueStock — Capa de datos y reglas de negocio
-   Los datos de arranque vienen de archivos JSON (carpeta data/):
+   Los datos de arranque vienen de archivos JSON (carpeta backend/data/):
      usuarios.json        Usuarios y permisos por rol
      catalogos.json       Líneas, categorías, días de aviso y horas de turno
      herramientas.json    Inventario inicial
@@ -13,7 +13,8 @@
 
 const DB = (() => {
   const CLAVE = "torquestock_db_v3";
-  const ARCHIVOS = ["data/usuarios.json", "data/catalogos.json", "data/herramientas.json", "data/historial-demo.json"];
+  const DATOS = "../backend/data/";
+  const ARCHIVOS = ["usuarios.json", "catalogos.json", "herramientas.json", "historial-demo.json"].map((f) => DATOS + f);
 
   // Estados del ciclo de vida de una herramienta (son parte de la lógica, no de los datos)
   const ESTADOS = {
@@ -130,7 +131,7 @@ const DB = (() => {
               <li><strong>Go Live</strong> en VS Code</li>
               <li>El link de GitHub Pages</li>
             </ul>` : `
-            <p style="margin-top:0">Revisa que la carpeta <strong>data/</strong> esté completa y que los archivos JSON no tengan errores.</p>
+            <p style="margin-top:0">Revisa que la carpeta <strong>backend/data/</strong> esté completa y que los archivos JSON no tengan errores.</p>
             <p class="error-form"></p>`}
         </div>
       </div>`;

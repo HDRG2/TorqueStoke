@@ -6,7 +6,9 @@
 # =========================================================
 
 $Puerto = 8080
-$Carpeta = Split-Path -Parent $MyInvocation.MyCommand.Path
+# Este archivo vive en backend/; el servidor entrega la carpeta principal del proyecto
+$Carpeta = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+$CarpetaConBarra = $Carpeta.TrimEnd("\") + "\"
 
 # --- Se necesita permiso de administrador para aceptar conexiones del celular ---
 $esAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
@@ -63,12 +65,15 @@ try {
     while ($servidor.IsListening) {
         $ctx = $servidor.GetContext()
         $ruta = [Uri]::UnescapeDataString($ctx.Request.Url.AbsolutePath).TrimStart("/")
-        if ($ruta -eq "") { $ruta = "index.html" }
+        if ($ruta -eq "" -or $ruta.EndsWith("/")) { $ruta = $ruta + "index.html" }
         $archivo = [IO.Path]::GetFullPath((Join-Path $Carpeta $ruta))
         $resp = $ctx.Response
         try {
-            # Solo archivos dentro de la carpeta del proyecto (nunca .git)
-            if ($archivo.StartsWith($Carpeta) -and (Test-Path $archivo -PathType Leaf) -and ($ruta -notmatch "^\.git")) {
+            # Solo se entrega la app (frontend/), los datos (backend/data/) y la redirección de inicio.
+            # Nada fuera de la carpeta del proyecto, ni .git, ni este script.
+            $permitida = ($ruta -eq "index.html") -or ($ruta -like "frontend/*") -or ($ruta -like "backend/data/*")
+            $dentro = $archivo.StartsWith($CarpetaConBarra, [StringComparison]::OrdinalIgnoreCase)
+            if ($permitida -and $dentro -and (Test-Path $archivo -PathType Leaf)) {
                 $bytes = [IO.File]::ReadAllBytes($archivo)
                 $ext = [IO.Path]::GetExtension($archivo).ToLower()
                 $resp.ContentType = if ($tipos.ContainsKey($ext)) { $tipos[$ext] } else { "application/octet-stream" }
