@@ -475,6 +475,18 @@ def anotar(texto):
     except Exception:
         pass   # un problema al escribir en la ventana nunca debe detener una acción
 
+class Servidor(ThreadingHTTPServer):
+    daemon_threads = True   # al cerrar con Ctrl + C no espera a las conexiones abiertas
+
+    def handle_error(self, request, client_address):
+        # Si el navegador corta una descarga a la mitad (recargó o cambió de página) no es un error
+        # del servidor: se ignora en vez de llenar la ventana con mensajes que asustan.
+        error = sys.exc_info()[1]
+        if isinstance(error, (ConnectionAbortedError, ConnectionResetError, BrokenPipeError, TimeoutError)):
+            return
+        anotar(f"ERROR con {client_address[0]}: {error!r}")
+
+
 def direcciones_locales():
     ips = set()
     try:
@@ -502,7 +514,7 @@ def main():
     mimetypes.add_type("image/svg+xml", ".svg")
     crear_tablas()
     try:
-        servidor = ThreadingHTTPServer(("0.0.0.0", PUERTO), Manejador)
+        servidor = Servidor(("0.0.0.0", PUERTO), Manejador)
     except OSError:
         print(f"\n  El puerto {PUERTO} ya está en uso. ¿Ya hay otro servidor de TorqueStock abierto?\n")
         sys.exit(1)
