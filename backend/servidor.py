@@ -22,9 +22,11 @@ import hashlib
 import hmac
 import json
 import mimetypes
+import os
 import posixpath
 import re
 import secrets
+import shutil
 import socket
 import sqlite3
 import sys
@@ -101,20 +103,66 @@ def conectar():
         con.close()
 
 def crear_base():
-    """Si la base no existe, la crea con base-inicial.sql (tablas y datos de ejemplo)."""
+    """
+    Prepara la base de datos al arrancar. Devuelve qué pasó:
+      ""          ya existía y está al día
+      "nueva"     no existía: se creó con base-inicial.sql (tablas y datos de ejemplo)
+      "migrada"   era de la versión anterior (sin usuarios ni catálogos): se pasó al formato
+                  nuevo conservando herramientas y movimientos, y se guardó un respaldo
+    """
     with conectar() as con:
         tablas = {f[0] for f in con.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
-        if "usuarios" in tablas:
-            return False
-        vieja = "herramientas" in tablas
-    if vieja:
-        # Base de una versión anterior (sin tabla de usuarios): se guarda aparte y se crea una nueva
+    if "usuarios" in tablas:
+        return ""
+
+    respaldo = None
+    if "herramientas" in tablas:
         respaldo = BASE.with_name(f"torquestock-anterior-{datetime.now():%Y%m%d-%H%M%S}.db")
-        BASE.rename(respaldo)
-        print(f"\n  La base de datos era de una versión anterior; se guardó como {respaldo.name}")
-    with sqlite3.connect(BASE) as con:
+        shutil.copy2(BASE, respaldo)
+        BASE.unlink()
+
+    con = sqlite3.connect(BASE)
+    try:
         con.executescript(SQL_INICIAL.read_text(encoding="utf-8"))
-    return True
+        if respaldo:
+            # Se reemplazan los datos de ejemplo por el inventario y la bitácora que ya tenía el almacén
+            con.execute("ATTACH DATABASE ? AS vieja", (str(respaldo),))
+            con.executescript("""
+                BEGIN;
+                DELETE FROM movimientos;
+                DELETE FROM herramientas;
+                -- Si usaban una categoría o línea que no está en los catálogos, se agrega
+                INSERT INTO categorias (nombre, orden)
+                    SELECT DISTINCT categoria, 100 FROM vieja.herramientas
+                    WHERE categoria NOT IN (SELECT nombre FROM categorias);
+                INSERT INTO lineas (nombre, orden)
+                    SELECT DISTINCT prestamo_linea, 100 FROM vieja.herramientas
+                    WHERE prestamo_linea IS NOT NULL AND prestamo_linea NOT IN (SELECT nombre FROM lineas);
+                INSERT INTO herramientas (codigo, nombre, categoria, torque_min, torque_max, proxima_calibracion,
+                                          estado, nota, prestamo_empleado, prestamo_operador, prestamo_linea, prestamo_fecha)
+                    SELECT codigo, nombre, categoria, torque_min, torque_max, proxima_calibracion,
+                           estado, nota, prestamo_empleado, prestamo_operador, prestamo_linea, prestamo_fecha
+                    FROM vieja.herramientas ORDER BY rowid;
+                INSERT INTO movimientos (fecha, tipo, codigo, detalle, usuario)
+                    SELECT fecha, tipo, codigo, detalle, usuario FROM vieja.movimientos
+                    WHERE codigo IN (SELECT codigo FROM herramientas) ORDER BY id;
+                UPDATE meta SET valor = '2' WHERE clave = 'version';
+                COMMIT;
+            """)
+            con.execute("DETACH DATABASE vieja")
+    except Exception:
+        con.close()
+        if respaldo:   # algo salió mal: se deja la base como estaba
+            BASE.unlink(missing_ok=True)
+            shutil.copy2(respaldo, BASE)
+            respaldo.unlink()
+        raise
+    con.close()
+    if respaldo:
+        print(f"\n  La base de datos era de la versión anterior: se pasó al formato nuevo conservando")
+        print(f"  herramientas y movimientos. Copia de cómo estaba: {respaldo.name}")
+        return "migrada"
+    return "nueva"
 
 def config(con, clave, defecto):
     fila = con.execute("SELECT valor FROM configuracion WHERE clave = ?", (clave,)).fetchone()
@@ -439,6 +487,14 @@ def anotar(texto):
 
 class Servidor(ThreadingHTTPServer):
     daemon_threads = True   # al cerrar con Ctrl + C no espera a las conexiones abiertas
+    # En Windows, "reusar la dirección" deja que DOS servidores escuchen el mismo puerto a la vez
+    # (uno viejo y uno nuevo) y las peticiones caen en cualquiera. Ahí el puerto se pide en exclusiva.
+    allow_reuse_address = os.name != "nt"
+
+    def server_bind(self):
+        if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
 
     def handle_error(self, request, client_address):
         # Si el navegador corta una descarga a la mitad (recargó o cambió de página) no es un error
@@ -477,17 +533,24 @@ def main():
             pass
     mimetypes.add_type("text/javascript", ".js")
     mimetypes.add_type("image/svg+xml", ".svg")
-    nueva = crear_base()
+    # Primero el puerto: si ya hay otro servidor abierto, este se cierra SIN tocar la base de datos
     try:
         servidor = Servidor(("0.0.0.0", PUERTO), Manejador)
     except OSError:
-        print(f"\n  El puerto {PUERTO} ya está en uso. ¿Ya hay otro servidor de TorqueStock abierto?\n")
+        print(f"\n  El puerto {PUERTO} ya está en uso: ya hay otro servidor de TorqueStock abierto.")
+        print("  Ciérralo (Ctrl + C en su ventana o terminal) y vuelve a abrir este.\n")
         sys.exit(1)
+    try:
+        nueva = crear_base()
+    except Exception:
+        servidor.server_close()
+        raise
 
     print()
     print("  TorqueStock - Servidor del almacén")
     print("  ----------------------------------")
-    print(f"  Base de datos: {BASE}" + ("  (nueva, con datos de ejemplo)" if nueva else ""))
+    print(f"  Base de datos: {BASE}" + {"nueva": "  (nueva, con datos de ejemplo)",
+                                           "migrada": "  (pasada al formato nuevo)"}.get(nueva, ""))
     print()
     print("  En esta computadora abre:")
     print(f"     http://localhost:{PUERTO}")
