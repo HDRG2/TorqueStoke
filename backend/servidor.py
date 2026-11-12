@@ -6,9 +6,12 @@ planta se conectan a ella por la red local. No necesita internet ni
 instalar nada: solo usa lo que ya trae Python (http.server, sqlite3,
 hashlib).
 
-  - Entrega la página (carpeta frontend/) y los catálogos (backend/data/).
-  - Guarda herramientas y movimientos en una base de datos SQLite
-    (backend/torquestock.db), compartida por todos los equipos.
+  - Entrega la página (carpeta frontend/).
+  - Guarda TODO en una base de datos SQLite (backend/torquestock.db),
+    compartida por todos los equipos: usuarios, roles y permisos,
+    líneas, categorías, configuración, herramientas y movimientos.
+  - Si la base no existe, la crea con backend/base-inicial.sql
+    (tablas y datos de ejemplo).
   - Revisa contraseñas (PBKDF2-SHA256) y permisos por rol en el
     servidor: aunque alguien modifique la página, no puede saltárselos.
 
@@ -33,17 +36,17 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-PUERTO = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
+PUERTO = 8080
 BACKEND = Path(__file__).resolve().parent
 RAIZ = BACKEND.parent
-DATOS = BACKEND / "data"
 BASE = BACKEND / "torquestock.db"
+SQL_INICIAL = BACKEND / "base-inicial.sql"
 HORAS_SESION = 12
 MAX_MOVIMIENTOS = 2000
 
 DISPONIBLE, PRESTAMO, REPARACION, BAJA = "Disponible", "En préstamo", "En reparación", "Baja"
 
-# Qué permiso pide cada acción (los permisos por rol están en usuarios.json)
+# Qué permiso pide cada acción (los permisos de cada rol están en la tabla "permisos")
 PERMISO_DE = {
     "alta": "alta", "prestar": "prestar", "devolver": "prestar", "devolverConDanio": "prestar",
     "reparar": "reparar", "reincorporar": "reincorporar", "baja": "baja", "calibrar": "calibrar",
@@ -62,16 +65,9 @@ class ErrorRegla(Exception):
 
 
 # ---------------------------------------------------------------- utilidades
-def leer_json(nombre):
-    with open(DATOS / nombre, encoding="utf-8-sig") as f:
-        return json.load(f)
-
 def ahora_iso(horas_atras=0):
     t = datetime.now(timezone.utc) - timedelta(hours=horas_atras)
     return t.isoformat(timespec="milliseconds").replace("+00:00", "Z")
-
-def sumar_dias(n):
-    return (date.today() + timedelta(days=n)).isoformat()
 
 def numero(x):
     return int(x) if float(x).is_integer() else x
@@ -97,30 +93,46 @@ def conectar():
     """Abre la base, guarda los cambios si todo salió bien (o los deshace si hubo error) y la cierra."""
     con = sqlite3.connect(BASE, timeout=10)
     con.row_factory = sqlite3.Row
+    con.execute("PRAGMA foreign_keys = ON")
     try:
         with con:
             yield con
     finally:
         con.close()
 
-def crear_tablas():
+def crear_base():
+    """Si la base no existe, la crea con base-inicial.sql (tablas y datos de ejemplo)."""
     with conectar() as con:
-        con.executescript("""
-            CREATE TABLE IF NOT EXISTS herramientas (
-                codigo TEXT PRIMARY KEY, nombre TEXT NOT NULL, categoria TEXT NOT NULL,
-                torque_min REAL NOT NULL, torque_max REAL NOT NULL, proxima_calibracion TEXT NOT NULL,
-                estado TEXT NOT NULL, nota TEXT NOT NULL DEFAULT '',
-                prestamo_empleado TEXT, prestamo_operador TEXT, prestamo_linea TEXT, prestamo_fecha TEXT);
-            CREATE TABLE IF NOT EXISTS movimientos (
-                id INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT NOT NULL, tipo TEXT NOT NULL,
-                codigo TEXT NOT NULL, detalle TEXT NOT NULL, usuario TEXT NOT NULL);
-            CREATE INDEX IF NOT EXISTS idx_mov_fecha ON movimientos (fecha);
-            CREATE TABLE IF NOT EXISTS sesiones (
-                token TEXT PRIMARY KEY, usuario TEXT NOT NULL, expira REAL NOT NULL);
-            CREATE TABLE IF NOT EXISTS meta (clave TEXT PRIMARY KEY, valor TEXT NOT NULL);
-        """)
-        if con.execute("SELECT COUNT(*) FROM herramientas").fetchone()[0] == 0:
-            cargar_demo(con)
+        tablas = {f[0] for f in con.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+        if "usuarios" in tablas:
+            return False
+        vieja = "herramientas" in tablas
+    if vieja:
+        # Base de una versión anterior (sin tabla de usuarios): se guarda aparte y se crea una nueva
+        respaldo = BASE.with_name(f"torquestock-anterior-{datetime.now():%Y%m%d-%H%M%S}.db")
+        BASE.rename(respaldo)
+        print(f"\n  La base de datos era de una versión anterior; se guardó como {respaldo.name}")
+    with sqlite3.connect(BASE) as con:
+        con.executescript(SQL_INICIAL.read_text(encoding="utf-8"))
+    return True
+
+def config(con, clave, defecto):
+    fila = con.execute("SELECT valor FROM configuracion WHERE clave = ?", (clave,)).fetchone()
+    return int(fila[0]) if fila else defecto
+
+def catalogos(con):
+    return {
+        "lineas": [f[0] for f in con.execute("SELECT nombre FROM lineas ORDER BY orden, nombre")],
+        "categorias": [f[0] for f in con.execute("SELECT nombre FROM categorias ORDER BY orden, nombre")],
+        "diasAviso": config(con, "diasAviso", 15),
+        "horasTurno": config(con, "horasTurno", 8),
+    }
+
+def tabla_permisos(con):
+    r = {f["rol"]: {} for f in con.execute("SELECT rol FROM roles ORDER BY rowid")}
+    for f in con.execute("SELECT rol, permiso, permitido FROM permisos"):
+        r.setdefault(f["rol"], {})[f["permiso"]] = bool(f["permitido"])
+    return r
 
 def subir_version(con):
     con.execute("INSERT INTO meta VALUES ('version', '1') "
@@ -133,39 +145,6 @@ def version(con):
 def movimiento(con, tipo, codigo, detalle, usuario, fecha=None):
     con.execute("INSERT INTO movimientos (fecha, tipo, codigo, detalle, usuario) VALUES (?, ?, ?, ?, ?)",
                 (fecha or ahora_iso(), tipo, codigo, detalle, usuario))
-
-def cargar_demo(con):
-    """Llena la base con el inventario y el historial de ejemplo (fechas relativas a hoy)."""
-    con.execute("DELETE FROM herramientas")
-    con.execute("DELETE FROM movimientos")
-    for h in leer_json("herramientas.json"):
-        con.execute("INSERT INTO herramientas (codigo, nombre, categoria, torque_min, torque_max, "
-                    "proxima_calibracion, estado) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (h["codigo"], h["nombre"], h["categoria"], h["torqueMin"], h["torqueMax"],
-                     sumar_dias(h["diasParaCalibracion"]), DISPONIBLE))
-    demo = leer_json("historial-demo.json")
-    movs = []
-    for p in demo.get("prestamosPasados", []):
-        movs.append((p["horasAtras"], "Préstamo", p["codigo"], f'{p["operador"]} (#{p["empleado"]}) → {p["linea"]}', "almacen"))
-        movs.append((p["horasAtras"] - p["horasPrestada"], "Devolución", p["codigo"],
-                     f'Recibida de {p["operador"]} (#{p["empleado"]}), {p["linea"]}', "almacen"))
-    for r in demo.get("recalibraciones", []):
-        movs.append((r["horasAtras"], "Recalibración", r["codigo"],
-                     f'Vigencia {sumar_dias(r["vigenciaAnteriorDias"])} → {sumar_dias(r["vigenciaNuevaDias"])}', "calidad"))
-    for p in demo.get("prestamosActivos", []):
-        con.execute("UPDATE herramientas SET estado = ?, prestamo_empleado = ?, prestamo_operador = ?, "
-                    "prestamo_linea = ?, prestamo_fecha = ? WHERE codigo = ?",
-                    (PRESTAMO, p["empleado"], p["operador"], p["linea"], ahora_iso(p["horasAtras"]), p["codigo"]))
-        movs.append((p["horasAtras"], "Préstamo", p["codigo"], f'{p["operador"]} (#{p["empleado"]}) → {p["linea"]}', "almacen"))
-    for r in demo.get("reparaciones", []):
-        con.execute("UPDATE herramientas SET estado = ?, nota = ? WHERE codigo = ?", (REPARACION, r["nota"], r["codigo"]))
-        movs.append((r["horasAtras"], "Devolución", r["codigo"],
-                     f'Recibida de {r["operador"]} (#{r["empleado"]}), {r["linea"]} — CON DAÑO: {r["danio"]}', "almacen"))
-        movs.append((r["horasAtras"], "Reparación", r["codigo"], r["nota"], "almacen"))
-    # Del más viejo al más nuevo (sort estable: con la misma hora, se respeta el orden de arriba)
-    for horas, tipo, codigo, detalle, usuario in sorted(movs, key=lambda m: -m[0]):
-        movimiento(con, tipo, codigo, detalle, usuario, ahora_iso(horas))
-    subir_version(con)
 
 def herramienta_json(f):
     prestamo = None
@@ -186,18 +165,14 @@ def estado_completo(con):
 
 
 # ---------------------------------------------------------------- usuarios y sesiones
-def buscar_usuario(nombre):
-    datos = leer_json("usuarios.json")   # se lee cada vez: lo que agregue "Registrar usuario.bat" sirve al momento
-    u = next((x for x in datos["usuarios"] if x["usuario"] == nombre), None)
-    return u, datos
-
 def autenticar(usuario, clave):
-    u, datos = buscar_usuario(str(usuario or "").strip().lower())
-    iteraciones = datos.get("seguridad", {}).get("iteraciones", 100000)
+    with conectar() as con:
+        u = con.execute("SELECT * FROM usuarios WHERE usuario = ?", (str(usuario or "").strip().lower(),)).fetchone()
+        iteraciones = config(con, "iteraciones", 100000)
     # Si el usuario no existe se cifra igual: tarda lo mismo y no revela qué usuarios existen
     sal = bytes.fromhex(u["sal"]) if u else bytes(16)
     calculado = hashlib.pbkdf2_hmac("sha256", str(clave or "").encode(), sal, iteraciones).hex()
-    if not u or not hmac.compare_digest(calculado, u.get("hash", "")):
+    if not u or not hmac.compare_digest(calculado, u["hash"]):
         return None
     token = secrets.token_urlsafe(32)
     with candado, conectar() as con:
@@ -209,22 +184,21 @@ def usuario_de_token(token):
     if not token:
         return None
     with conectar() as con:
-        fila = con.execute("SELECT usuario FROM sesiones WHERE token = ? AND expira > ?", (token, time.time())).fetchone()
-    if not fila:
-        return None
-    u, datos = buscar_usuario(fila["usuario"])   # el rol se toma del archivo actual
-    if not u:
-        return None
-    return {"usuario": u["usuario"], "nombre": u["nombre"], "rol": u["rol"],
-            "permisos": datos["permisos"].get(u["rol"], {})}
+        u = con.execute("SELECT u.usuario, u.nombre, u.rol FROM sesiones s JOIN usuarios u ON u.usuario = s.usuario "
+                        "WHERE s.token = ? AND s.expira > ?", (token, time.time())).fetchone()
+        if not u:
+            return None
+        permisos = {f["permiso"]: bool(f["permitido"])
+                    for f in con.execute("SELECT permiso, permitido FROM permisos WHERE rol = ?", (u["rol"],))}
+    return {"usuario": u["usuario"], "nombre": u["nombre"], "rol": u["rol"], "permisos": permisos}
 
 
 # ---------------------------------------------------------------- reglas de negocio
-def semaforo(proxima):
+def semaforo(con, proxima):
     dias = (date.fromisoformat(proxima) - date.today()).days
     if dias < 0:
         return "rojo"
-    return "amarillo" if dias <= leer_json("catalogos.json").get("diasAviso", 15) else "verde"
+    return "amarillo" if dias <= config(con, "diasAviso", 15) else "verde"
 
 def obtener(con, codigo):
     f = con.execute("SELECT * FROM herramientas WHERE codigo = ?", (str(codigo or ""),)).fetchone()
@@ -238,7 +212,7 @@ def exigir_estado(f, *permitidos):
 
 def ejecutar(con, accion, codigo, datos, quien):
     datos = datos if isinstance(datos, dict) else {}
-    catalogos = leer_json("catalogos.json")
+    cat = catalogos(con)
 
     if accion == "alta":
         codigo = str(datos.get("codigo") or "").strip().upper()
@@ -251,7 +225,7 @@ def ejecutar(con, accion, codigo, datos, quien):
             raise ErrorRegla("El código solo admite letras, números y guion (máx. 15).")
         if con.execute("SELECT 1 FROM herramientas WHERE codigo = ?", (codigo,)).fetchone():
             raise ErrorRegla(f"Ya existe una herramienta con el código {codigo}.")
-        if categoria not in catalogos["categorias"]:
+        if categoria not in cat["categorias"]:
             raise ErrorRegla("Categoría no válida.")
         try:
             minimo, maximo = float(datos["torqueMin"]), float(datos["torqueMax"])
@@ -274,7 +248,7 @@ def ejecutar(con, accion, codigo, datos, quien):
     if accion == "prestar":   # RF-04 con el bloqueo de RF-06
         if f["estado"] != DISPONIBLE:
             raise ErrorRegla("La herramienta no está disponible.")
-        if semaforo(f["proxima_calibracion"]) == "rojo":
+        if semaforo(con, f["proxima_calibracion"]) == "rojo":
             raise ErrorRegla("BLOQUEADO: la calibración está vencida. No se puede prestar (IATF 16949 / ISO 6789).")
         empleado = str(datos.get("empleado") or "").strip()
         operador = str(datos.get("operador") or "").strip()
@@ -284,7 +258,7 @@ def ejecutar(con, accion, codigo, datos, quien):
         if not re.fullmatch(r"\d{1,10}", empleado):
             raise ErrorRegla("El número de empleado solo admite dígitos.")
         operador = texto(operador, "el nombre del operador", 60)
-        if linea not in catalogos["lineas"]:
+        if linea not in cat["lineas"]:
             raise ErrorRegla("Línea no válida.")
         con.execute("UPDATE herramientas SET estado = ?, prestamo_empleado = ?, prestamo_operador = ?, "
                     "prestamo_linea = ?, prestamo_fecha = ? WHERE codigo = ?",
@@ -337,12 +311,9 @@ def ejecutar(con, accion, codigo, datos, quien):
 
 
 # ---------------------------------------------------------------- servidor HTTP
-DATOS_PUBLICOS = {"catalogos.json", "herramientas.json", "historial-demo.json", "usuarios.json"}
-
 def permitido(ruta):
-    """Solo se entregan la página y los catálogos; nunca la base de datos ni los scripts del servidor."""
-    return (ruta in ("/", "/index.html") or ruta.startswith("/frontend/")
-            or (ruta.startswith("/backend/data/") and posixpath.basename(ruta) in DATOS_PUBLICOS))
+    """Solo se entrega la página; nunca la base de datos ni los archivos del servidor."""
+    return ruta in ("/", "/index.html") or ruta.startswith("/frontend/")
 
 
 class Manejador(SimpleHTTPRequestHandler):
@@ -393,29 +364,23 @@ class Manejador(SimpleHTTPRequestHandler):
                 return self.api_get(ruta)
         except ErrorRegla as e:
             return self.responder_json({"error": str(e)}, e.codigo_http)
-        if ruta == "/backend/data/usuarios.json":
-            return self.usuarios_sin_claves()
         if not permitido(ruta):
             return self.send_error(404, "No encontrado")
         return super().do_GET()
 
     def do_HEAD(self):
         ruta = posixpath.normpath(unquote(urlsplit(self.path).path))
-        if not permitido(ruta) or ruta.startswith("/api/") or ruta.endswith("usuarios.json"):
+        if not permitido(ruta) or ruta.startswith("/api/"):
             return self.send_error(404, "No encontrado")
         return super().do_HEAD()
-
-    def usuarios_sin_claves(self):
-        # La página necesita los permisos por rol, pero nunca recibe sales ni hashes
-        datos = leer_json("usuarios.json")
-        datos["usuarios"] = [{k: u[k] for k in ("usuario", "nombre", "rol")} for u in datos["usuarios"]]
-        datos.pop("seguridad", None)
-        self.responder_json(datos)
 
     # ----- API
     def api_get(self, ruta):
         if ruta == "/api/ping":
             return self.responder_json({"servidor": "TorqueStock", "version": 1})
+        if ruta == "/api/config":   # permisos y catálogos para armar la pantalla (no tiene nada secreto)
+            with conectar() as con:
+                return self.responder_json({**catalogos(con), "permisos": tabla_permisos(con)})
         u, _ = self.sesion()
         with conectar() as con:
             if ruta == "/api/version":
@@ -502,6 +467,9 @@ def direcciones_locales():
 
 
 def main():
+    global PUERTO
+    if len(sys.argv) > 1:
+        PUERTO = int(sys.argv[1])
     for flujo in (sys.stdout, sys.stderr):   # acentos en la ventana aunque la consola no sea UTF-8
         try:
             flujo.reconfigure(encoding="utf-8", errors="replace")
@@ -509,7 +477,7 @@ def main():
             pass
     mimetypes.add_type("text/javascript", ".js")
     mimetypes.add_type("image/svg+xml", ".svg")
-    crear_tablas()
+    nueva = crear_base()
     try:
         servidor = Servidor(("0.0.0.0", PUERTO), Manejador)
     except OSError:
@@ -519,7 +487,7 @@ def main():
     print()
     print("  TorqueStock - Servidor del almacén")
     print("  ----------------------------------")
-    print(f"  Base de datos: {BASE}")
+    print(f"  Base de datos: {BASE}" + ("  (nueva, con datos de ejemplo)" if nueva else ""))
     print()
     print("  En esta computadora abre:")
     print(f"     http://localhost:{PUERTO}")

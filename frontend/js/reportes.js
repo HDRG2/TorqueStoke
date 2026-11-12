@@ -123,11 +123,7 @@ $("csvMovs").onclick = () => descargarCSV(`movimientos_${fechaArchivo()}.csv`,
   movsFiltrados().map((m) => [fmtFechaHora(m.fecha), m.codigo, m.tipo, m.detalle, m.usuario]));
 
 // Si otra pestaña cambia los datos, vuelve a armar el reporte con lo más reciente
-window.addEventListener("storage", (e) => {
-  if (e.key && !e.key.startsWith("torquestock_db")) return;
-  window.location.reload();
-});
-// Modo servidor: otro equipo hizo un cambio
+// Otro equipo hizo un cambio: se vuelve a armar el reporte
 window.addEventListener("torquestock:datos", () => window.location.reload());
 
 if (dentroDeMarco) $("btnImprimir").classList.add("oculto");

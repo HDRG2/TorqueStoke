@@ -49,8 +49,6 @@ $("nombreUsuario").textContent = usuario.nombre;
 $("rolUsuario").textContent = NOMBRE_ROL[usuario.rol] || usuario.rol;
 $("btnSalir").onclick = () => Sesion.cerrar();
 if (puede.alta) $("btnNueva").classList.remove("oculto");
-// "Restablecer demo" solo existe en la demostración; en el sistema real (servidor) no se puede borrar el almacén
-if (puede.restablecer && DB.modo === "demo") $("btnRestablecer").classList.remove("oculto");
 if (puede.reportes) $("lnkReportes").classList.remove("oculto");
 if (puede.acerca) $("lnkAcerca").classList.remove("oculto");
 
@@ -376,21 +374,7 @@ $("formMotivo").addEventListener("submit", (e) => {
   } catch (err) { $("errorMotivo").textContent = err.message; } });
 });
 
-$("btnRestablecer").onclick = async () => {
-  if (await confirmar("¿Restablecer todos los datos a los de ejemplo? Se perderán los cambios.", "Restablecer")) {
-    try { await DB.restablecer(usuario.usuario); } catch (err) { avisar(err.message, "error"); return; }
-    avisar("Datos de demostración restablecidos.");
-    refrescar();
-  }
-};
-
-// Si otra pestaña cambia los datos, se muestran aquí al momento
-window.addEventListener("storage", (e) => {
-  if (e.key && !e.key.startsWith("torquestock_db")) return;
-  DB.recargar();
-  refrescar();
-});
-// Modo servidor: otro equipo hizo un cambio (préstamo, devolución…)
+// Otro equipo hizo un cambio (préstamo, devolución…): se muestra aquí al momento
 window.addEventListener("torquestock:datos", () => {
   refrescar();
   if ($("modalFicha").classList.contains("abierto") && DB.buscar(codigoSeleccionado)) pintarFicha(codigoSeleccionado);

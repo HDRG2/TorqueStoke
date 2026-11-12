@@ -47,7 +47,6 @@
     </form>
   </main>
 
-  <script src="js/cifrado.js"></script>
   <script src="js/datos.js"></script>
   <script src="js/sesion.js"></script>
   <script>
@@ -104,21 +103,18 @@
     });
     // Enter en "Contraseña" envía el formulario (comportamiento normal) y se valida abajo
 
-    // Indica si la página está conectada al servidor del almacén o en modo demostración
+    // Confirma que la página está conectada al servidor del almacén
     DB.listo.then(() => {
       const modo = document.getElementById("loginModo");
-      const servidor = DB.modo === "servidor";
-      modo.className = `login-modo ${servidor ? "conectado" : "demo"}`;
-      modo.textContent = servidor
-        ? "Conectado al servidor del almacén"
-        : "Modo demostración: los cambios se guardan solo en este navegador";
+      modo.className = "login-modo conectado";
+      modo.textContent = "Conectado al servidor del almacén";
       modo.hidden = false;
     }).catch(() => {});
 
     document.getElementById("formLogin").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      // Los usuarios vienen de backend/data/usuarios.json: espera a que se carguen
+      // Espera a que la página termine de conectarse con el servidor
       try { await DB.listo; } catch (err) { return; }   // si fallan, ya se muestra un aviso
 
       // RNF-05: validar campos antes de enviar

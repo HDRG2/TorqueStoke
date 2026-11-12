@@ -42,7 +42,7 @@
             <dt>Propósito</dt><dd>Centralizar y automatizar el control del almacén de herramientas de torque para conocer en tiempo real la disponibilidad, el operador responsable de cada préstamo y la vigencia de calibración.</dd>
             <dt>Normas</dt><dd>IATF 16949 · ISO 9001 · ISO 6789</dd>
             <dt>Modelo de desarrollo</dt><dd>Incremental con prototipado evolutivo (3 incrementos)</dd>
-            <dt>Tecnología</dt><dd>Frontend: HTML5, CSS3 responsivo y JavaScript. Backend: servidor en Python con base de datos SQLite en la red local del almacén; catálogos en archivos JSON. Sin dependencias ni internet (modo demostración con LocalStorage en GitHub Pages).</dd>
+            <dt>Tecnología</dt><dd>Frontend: HTML5, CSS3 responsivo y JavaScript. Backend: servidor en Python con base de datos SQLite (usuarios, permisos, catálogos, inventario y bitácora) en la red local del almacén. Sin dependencias ni internet.</dd>
             <dt>Fuera de alcance</dt><dd>Facturación, compras a proveedores, nómina y conexión con maquinaria CNC.</dd>
           </dl>
         </div>
@@ -86,10 +86,10 @@
             <tr><td><b>RF-07</b></td><td>Actualización de certificados</td><td>Media</td><td>3</td><td>Botón “Calibración” para Calidad y Jefe; reactiva la etiqueta verde.</td><td class="check">✔</td></tr>
             <tr><td><b>RF-08</b></td><td>Dashboard de indicadores</td><td>Media</td><td>3</td><td>Tarjetas: total, disponibles, en préstamo, vencidas, en reparación, préstamos que exceden el turno; bitácora reciente.</td><td class="check">✔</td></tr>
             <tr><td><b>RNF-01</b></td><td>Usabilidad</td><td>Alta</td><td>2</td><td>Préstamo en 3 clics y devolución en 1; navegación con Enter; manual integrado.</td><td class="check">✔</td></tr>
-            <tr><td><b>RNF-02</b></td><td>Rendimiento (&lt; 3 s)</td><td>Alta</td><td>3</td><td>Todo se procesa en el navegador; filtrado y contadores al instante.</td><td class="check">✔</td></tr>
+            <tr><td><b>RNF-02</b></td><td>Rendimiento (&lt; 3 s)</td><td>Alta</td><td>3</td><td>El servidor responde en la red local sin internet; filtrado y contadores al instante en el navegador.</td><td class="check">✔</td></tr>
             <tr><td><b>RNF-03</b></td><td>Compatibilidad</td><td>Alta</td><td>1</td><td>HTML/CSS/JS estándar para Chrome, Edge y Firefox en Windows 10/11; sin plugins.</td><td class="check">✔</td></tr>
             <tr><td><b>RNF-04</b></td><td>Diseño responsivo</td><td>Media</td><td>1</td><td>Se adapta a 1920×1080, 1366×768 y tabletas.</td><td class="check">✔</td></tr>
-            <tr><td><b>RNF-05</b></td><td>Integridad y mantenibilidad</td><td>Alta</td><td>3</td><td>Validación de campos obligatorios; código separado en vista (HTML), estilos (CSS) y lógica (JS).</td><td class="check">✔</td></tr>
+            <tr><td><b>RNF-05</b></td><td>Integridad y mantenibilidad</td><td>Alta</td><td>3</td><td>Validación de campos en la página y en el servidor; base SQLite con llaves y restricciones; código separado en frontend (HTML, CSS, JS) y backend (Python, SQL).</td><td class="check">✔</td></tr>
           </tbody>
         </table>
       </div>
