@@ -133,7 +133,9 @@
       const boton = e.submitter || document.querySelector("#formLogin button[type=submit]");
       boton.disabled = true;
       boton.textContent = "Verificando…";
-      await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));   // deja que se vea el mensaje
+      // Deja que se vea el mensaje. Si el navegador pausa el dibujado (pestaña en segundo plano),
+      // el temporizador de respaldo sigue de todos modos para que el login nunca se quede atorado.
+      await new Promise((r) => { requestAnimationFrame(() => setTimeout(r, 0)); setTimeout(r, 100); });
       let u;
       try { u = await DB.autenticar(usuario.value, clave.value); }
       catch (err) { error.textContent = err.message; }   // p. ej. sin conexión con el servidor

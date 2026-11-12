@@ -22,7 +22,7 @@ Si abres `frontend/index.html` con doble clic aparece un aviso: el navegador sol
 | Almacenista de ventanilla | `almacen` | `almacen123` |
 | Ingeniero de calidad | `calidad` | `calidad123` |
 
-El Jefe de almacén puede usar **Restablecer demo** para volver a los datos de ejemplo (en modo servidor reinicia la base de datos para todos).
+En el modo demostración, el Jefe de almacén puede usar **Restablecer demo** para volver a los datos de ejemplo. En el sistema del almacén (servidor) ese botón no existe: nadie puede borrar los datos desde la página.
 
 ## Datos (carpeta `backend/data/`)
 
@@ -107,7 +107,7 @@ TorqueStock/
     └── data/               Datos iniciales en JSON: usuarios, catálogos, inventario e historial de ejemplo
 ```
 
-> **API del servidor:** `POST /api/login`, `POST /api/logout`, `GET /api/estado`, `GET /api/version`, `POST /api/accion` (`alta`, `prestar`, `devolver`, `devolverConDanio`, `reparar`, `reincorporar`, `baja`, `calibrar`, `restablecer`). Todas, menos el login, piden la sesión en el encabezado `Authorization: Bearer <token>`.
+> **API del servidor:** `POST /api/login`, `POST /api/logout`, `GET /api/estado`, `GET /api/version`, `POST /api/accion` (`alta`, `prestar`, `devolver`, `devolverConDanio`, `reparar`, `reincorporar`, `baja`, `calibrar`). Todas, menos el login, piden la sesión en el encabezado `Authorization: Bearer <token>`.
 
 ## Requerimientos cubiertos
 

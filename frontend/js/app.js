@@ -49,7 +49,8 @@ $("nombreUsuario").textContent = usuario.nombre;
 $("rolUsuario").textContent = NOMBRE_ROL[usuario.rol] || usuario.rol;
 $("btnSalir").onclick = () => Sesion.cerrar();
 if (puede.alta) $("btnNueva").classList.remove("oculto");
-if (puede.restablecer) $("btnRestablecer").classList.remove("oculto");
+// "Restablecer demo" solo existe en la demostración; en el sistema real (servidor) no se puede borrar el almacén
+if (puede.restablecer && DB.modo === "demo") $("btnRestablecer").classList.remove("oculto");
 if (puede.reportes) $("lnkReportes").classList.remove("oculto");
 if (puede.acerca) $("lnkAcerca").classList.remove("oculto");
 

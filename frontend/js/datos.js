@@ -533,7 +533,10 @@ const DB = (() => {
     reincorporar: async (c, u) => enServidor() ? accionServidor("reincorporar", c) : reincorporar(c, u),
     darDeBaja: async (c, t, u) => enServidor() ? accionServidor("baja", c, { texto: t }) : darDeBaja(c, t, u),
     actualizarCalibracion: async (c, f, u) => enServidor() ? accionServidor("calibrar", c, { fecha: f }) : actualizarCalibracion(c, f, u),
-    restablecer: async (u) => enServidor() ? accionServidor("restablecer") : restablecer(u),
+    restablecer: async (u) => {
+      if (enServidor()) throw new Error("En el sistema del almacén no se pueden borrar los datos desde la página.");
+      return restablecer(u);
+    },
   };
 
   return {

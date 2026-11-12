@@ -47,8 +47,9 @@ DISPONIBLE, PRESTAMO, REPARACION, BAJA = "Disponible", "En préstamo", "En repar
 PERMISO_DE = {
     "alta": "alta", "prestar": "prestar", "devolver": "prestar", "devolverConDanio": "prestar",
     "reparar": "reparar", "reincorporar": "reincorporar", "baja": "baja", "calibrar": "calibrar",
-    "restablecer": "restablecer",
 }
+# No hay acción para borrar todo: en el sistema real nadie puede reiniciar el almacén desde la página.
+# Para empezar de cero se cierra el servidor y se borra backend/torquestock.db.
 
 candado = threading.Lock()   # una acción a la vez: dos equipos no pueden prestar la misma herramienta
 
@@ -238,10 +239,6 @@ def exigir_estado(f, *permitidos):
 def ejecutar(con, accion, codigo, datos, quien):
     datos = datos if isinstance(datos, dict) else {}
     catalogos = leer_json("catalogos.json")
-
-    if accion == "restablecer":
-        cargar_demo(con)
-        return None
 
     if accion == "alta":
         codigo = str(datos.get("codigo") or "").strip().upper()
