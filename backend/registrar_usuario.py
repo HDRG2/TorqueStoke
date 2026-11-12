@@ -1,21 +1,20 @@
 """
 TorqueStock - Registrar empleado o cambiar su contraseña
 
-Pide los datos, cifra la contraseña (PBKDF2-SHA256 con sal aleatoria)
-y la guarda en la tabla "usuarios" de la base de datos. La contraseña
-nunca se guarda, solo su hash. Sirve aunque el servidor esté abierto:
-el cambio se usa desde el siguiente inicio de sesión.
+Pide los datos y guarda al empleado en la tabla "usuarios" de la base de
+datos con la contraseña cifrada (PBKDF2-SHA256 con sal aleatoria); la
+contraseña nunca se guarda. Funciona aunque el servidor esté abierto: el
+cambio sirve desde el siguiente inicio de sesión.
 
 Uso:  python backend/registrar_usuario.py   (o doble clic en "Registrar usuario.bat")
 """
 
 import getpass
-import hashlib
 import re
-import secrets
 import sys
 
-from servidor import ahora_iso, config, conectar, crear_base
+from app.base_datos import conectar, preparar_base
+from app.seguridad import guardar_usuario
 
 REGLA = re.compile(r"[A-Za-z0-9]{1,15}")   # RF-01: máximo 15, solo letras y números
 
@@ -51,7 +50,7 @@ def main():
             flujo.reconfigure(encoding="utf-8", errors="replace")
         except Exception:
             pass
-    crear_base()   # por si es la primera vez y la base todavía no existe
+    preparar_base()   # por si es la primera vez y la base todavía no existe
 
     print("\n  TorqueStock - Registro de empleados")
     print("  -----------------------------------")
@@ -66,15 +65,14 @@ def main():
 
     usuario = pedir("Usuario (máx. 15, solo letras y números)", REGLA.fullmatch,
                     "Solo letras y números, máximo 15.").lower()
-    with conectar() as con:
-        existente = con.execute("SELECT nombre, rol FROM usuarios WHERE usuario = ?", (usuario,)).fetchone()
+    existente = next((u for u in actuales if u["usuario"] == usuario), None)
 
     if existente:
         print(f"\n  '{usuario}' ya existe: {existente['nombre']}.")
         if not input("  ¿Cambiar su contraseña? (s/n): ").strip().lower().startswith("s"):
             print("  Sin cambios.\n")
             return
-        nombre, rol = existente["nombre"], existente["rol"]
+        nombre, rol = existente["nombre"], None
     else:
         nombre = pedir("Nombre completo", lambda v: 3 <= len(v) <= 60, "Escribe entre 3 y 60 caracteres.")
         print()
@@ -82,28 +80,15 @@ def main():
             print(f"    {i}) {r['nombre']}")
         opcion = pedir(f"Rol (1 a {len(roles)})", lambda v: v.isdigit() and 1 <= int(v) <= len(roles),
                        f"Escribe un número del 1 al {len(roles)}.")
-        rol = roles[int(opcion) - 1]["rol"]
+        rol = roles[int(opcion) - 1]
 
     print()
-    clave = pedir_clave()
-    sal = secrets.token_bytes(16)
-    with conectar() as con:
-        iteraciones = config(con, "iteraciones", 100000)
-        hash_ = hashlib.pbkdf2_hmac("sha256", clave.encode(), sal, iteraciones).hex()
-        if existente:
-            con.execute("UPDATE usuarios SET sal = ?, hash = ? WHERE usuario = ?", (sal.hex(), hash_, usuario))
-            # Por seguridad, se cierran las sesiones que tenía abiertas con la contraseña anterior
-            con.execute("DELETE FROM sesiones WHERE usuario = ?", (usuario,))
-        else:
-            con.execute("INSERT INTO usuarios (usuario, nombre, rol, sal, hash, creado) VALUES (?, ?, ?, ?, ?, ?)",
-                        (usuario, nombre, rol, sal.hex(), hash_, ahora_iso()))
-    clave = None
+    guardar_usuario(usuario, nombre, rol["rol"] if rol else None, pedir_clave())
 
     if existente:
         print(f"\n  Contraseña de '{usuario}' actualizada. Ya puede entrar con la nueva.\n")
     else:
-        nombre_rol = next(r["nombre"] for r in roles if r["rol"] == rol)
-        print(f"\n  Empleado '{usuario}' registrado como {nombre_rol}. Ya puede iniciar sesión.\n")
+        print(f"\n  Empleado '{usuario}' registrado como {rol['nombre']}. Ya puede iniciar sesión.\n")
 
 
 if __name__ == "__main__":

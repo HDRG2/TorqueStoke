@@ -9,7 +9,7 @@
    ========================================================= */
 
 const DB = (() => {
-  const API = "../api/";
+  const API = "api/";
   const CADA_MS = 3000;     // cada cuánto se pregunta al servidor si otro equipo hizo cambios
 
   // Estados del ciclo de vida de una herramienta

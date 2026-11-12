@@ -1,17 +1,14 @@
 ﻿# =========================================================
-#  TorqueStock - Arranque del servidor (sin internet)
-#  1. Abre el puerto en el Firewall de Windows (solo la primera vez).
-#  2. Si la computadora tiene Python, arranca backend/servidor.py:
-#     base de datos compartida por todos los equipos de la red.
-#  3. Si no tiene Python, avisa cómo instalarlo.
+#  TorqueStock - Arranque del servidor del almacén (sin internet)
+#  Lo abre "Iniciar servidor.bat" (en la carpeta principal).
+#  1. Abre el puerto 8080 en el Firewall de Windows (solo la
+#     primera vez) para que entren las tablets de la red.
+#  2. Arranca backend/servidor.py con Python.
 # =========================================================
 
 $Puerto = 8080
-# Este archivo vive en backend/; el servidor entrega la carpeta principal del proyecto
-$Carpeta = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$CarpetaConBarra = $Carpeta.TrimEnd("\") + "\"
 
-# --- Se necesita permiso de administrador para aceptar conexiones del celular ---
+# --- Se necesita permiso de administrador para abrir el puerto en el Firewall ---
 $esAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
     [Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $esAdmin) {
@@ -26,7 +23,7 @@ if (-not (Get-NetFirewallRule -DisplayName $regla -ErrorAction SilentlyContinue)
     New-NetFirewallRule -DisplayName $regla -Direction Inbound -Protocol TCP -LocalPort $Puerto -Action Allow -Profile Any | Out-Null
 }
 
-# --- Servidor completo con Python (base de datos compartida) ---
+# --- Buscar Python y arrancar el servidor ---
 $python = $null
 foreach ($candidato in @("python", "py")) {
     if (Get-Command $candidato -ErrorAction SilentlyContinue) {
@@ -34,14 +31,14 @@ foreach ($candidato in @("python", "py")) {
         if ($LASTEXITCODE -eq 0) { $python = $candidato; break }
     }
 }
+
 if ($python) {
     & $python "$PSScriptRoot\servidor.py" $Puerto
-    Read-Host "Presiona Enter para cerrar"
-    exit
+} else {
+    Write-Host ""
+    Write-Host "  No se encontró Python en esta computadora." -ForegroundColor Yellow
+    Write-Host "  TorqueStock guarda sus datos en una base SQLite que maneja un servidor en Python." -ForegroundColor Yellow
+    Write-Host "  Instala Python 3 desde python.org (marca 'Add python.exe to PATH') y vuelve a abrir este archivo." -ForegroundColor Yellow
+    Write-Host ""
 }
-Write-Host ""
-Write-Host "  No se encontró Python en esta computadora." -ForegroundColor Yellow
-Write-Host "  TorqueStock guarda sus datos en una base SQLite que maneja un servidor en Python." -ForegroundColor Yellow
-Write-Host "  Instala Python 3 desde python.org (marca 'Add python.exe to PATH') y vuelve a abrir este archivo." -ForegroundColor Yellow
-Write-Host ""
 Read-Host "Presiona Enter para cerrar"

@@ -1,7 +1,7 @@
 /* =========================================================
-   TorqueStock — Lógica de la interfaz del panel
+   TorqueStock — Panel (inventario, préstamos y bitácora)
    Se carga como módulo para poder esperar a que lleguen los
-   datos de los archivos JSON antes de pintar la pantalla.
+   datos del servidor antes de pintar la pantalla.
    ========================================================= */
 
 const usuario = Sesion.exigir();

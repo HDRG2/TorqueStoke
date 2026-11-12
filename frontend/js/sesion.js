@@ -4,6 +4,15 @@
    celulares o vistas incrustadas), usa window.name como respaldo.
    ========================================================= */
 
+// Versiones anteriores instalaban un "service worker" que guardaba copias de la página.
+// Ya no se usa (todo viene del servidor del almacén): se quita para no mostrar copias viejas.
+try {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister())).catch(() => {});
+    if (window.caches) caches.keys().then((ks) => ks.forEach((k) => caches.delete(k))).catch(() => {});
+  }
+} catch (e) { /* sin soporte */ }
+
 const Sesion = (() => {
   const CLAVE = "torquestock_sesion";
 

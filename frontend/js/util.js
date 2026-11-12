@@ -61,34 +61,13 @@ function avisar(texto, tipo = "") {
   avisar.t = setTimeout(() => (a.className = "aviso"), 3500);
 }
 
-// Descarga de CSV (compatible con Excel: BOM UTF-8 y separador coma).
-// En la versión publicada (claude.ai) usa la capacidad "downloads"; en la computadora, una descarga normal.
-let _descargas;
-function capacidadDescargas() {
-  if (_descargas === undefined) {
-    _descargas = (window.claude && typeof window.claude.use === "function")
-      ? window.claude.use("downloads").catch(() => null)
-      : Promise.resolve(null);
-  }
-  return _descargas;
-}
-async function descargarCSV(nombreArchivo, encabezados, filas) {
+// Descarga de CSV (compatible con Excel: BOM UTF-8 y separador coma)
+function descargarCSV(nombreArchivo, encabezados, filas) {
   const celda = (v) => {
     const s = String(v ?? "");
     return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const contenido = "\ufeff" + [encabezados, ...filas].map((f) => f.map(celda).join(",")).join("\r\n");
-
-  const descargas = await capacidadDescargas();
-  if (descargas) {
-    try {
-      await descargas.save({ filename: nombreArchivo, data: contenido });
-      avisar(`Archivo ${nombreArchivo} listo.`, "ok");
-    } catch (e) {
-      if (e && e.code !== "declined") avisar("No se pudo descargar el archivo en esta vista.", "error");
-    }
-    return;
-  }
   const blob = new Blob([contenido], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -100,10 +79,7 @@ async function descargarCSV(nombreArchivo, encabezados, filas) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-// ¿La página corre dentro de otra (p. ej. publicada en claude.ai)? Ahí no se permite imprimir.
-const dentroDeMarco = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
-
-// Confirmación dentro de la página (los navegadores de celular y claude.ai bloquean window.confirm)
+// Confirmación dentro de la página (algunos navegadores de celular bloquean window.confirm)
 function confirmar(mensaje, textoBoton = "Confirmar") {
   return new Promise((resolver) => {
     const fondo = document.createElement("div");

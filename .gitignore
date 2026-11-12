@@ -1,3 +1,5 @@
-backend/*.db
-backend/*.db-journal
+# La base de datos y sus respaldos son de cada computadora: no se suben a GitHub
+backend/database/*.db
+backend/database/*.db-journal
+backend/database/respaldos/
 __pycache__/

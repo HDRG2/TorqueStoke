@@ -304,7 +304,7 @@
             <dt data-roles="Administrador Almacenista">Una herramienta no se puede prestar y no está vencida.</dt>
             <dd data-roles="Administrador Almacenista">Revisa su estado: si está En reparación debe reincorporarse primero.</dd>
             <dt>Los datos no aparecen en otra computadora.</dt>
-            <dd>En esta versión los datos se guardan en el navegador del equipo donde se capturan. Usa siempre la computadora de ventanilla.</dd>
+            <dd>Todos los equipos ven la misma base de datos del servidor del almacén. Revisa que ese equipo esté en la misma red (WiFi o cable) y que hayas abierto la dirección que muestra la ventana del servidor, por ejemplo http://192.168.1.50:8080.</dd>
           </dl>
         </div>
       </section>
@@ -314,49 +314,6 @@
   </div>
 
   <script src="js/sesion.js"></script>
-  <script>
-    // Si hay sesión, "Volver" regresa al panel y se resalta el rol del usuario
-    const u = Sesion.actual();
-    if (u) {
-      document.getElementById("btnVolver").href = "panel.html";
-      document.querySelector("#btnVolver span").textContent = "Volver al panel";
-      const fila = document.querySelector(`tr[data-rol="${u.rol}"]`);
-      if (fila) fila.classList.add("mi-rol");
-      if (u.rol === "Administrador") document.getElementById("lnkAcerca").hidden = false;
-    }
-
-    // ---------- Manual por rol (automático) ----------
-    // Cada sección tiene data-roles con los roles que la usan; se ocultan las que no son del rol.
-    // Rol: el de la sesión. Sin sesión, el de la dirección (?rol=Almacenista); si tampoco, el manual completo.
-    const NOMBRES = { Administrador: "Jefe de almacén", Almacenista: "Almacenista", Calidad: "Ingeniero de calidad" };
-    let rol = u ? u.rol : new URLSearchParams(location.search).get("rol");
-    if (!NOMBRES[rol]) rol = "";
-
-    if (rol) {
-      document.querySelectorAll("[data-roles]").forEach((el) =>
-        el.classList.toggle("oculto", !el.dataset.roles.split(" ").includes(rol)));
-
-      // Numera de nuevo solo las secciones visibles (1, 2, 3… sin saltos)
-      let n = 0;
-      document.querySelectorAll(".manual-contenido section").forEach((s) => {
-        if (s.classList.contains("oculto")) return;
-        const h = s.querySelector("h2");
-        h.textContent = `${++n}. ${h.textContent.replace(/^\d+\.\s*/, "")}`;
-      });
-    }
-
-    const nombre = rol ? `del ${NOMBRES[rol]}` : "de usuario";
-    document.getElementById("subtituloManual").textContent = `Manual ${nombre}`;
-    document.getElementById("tituloImpresion").textContent = `TorqueStock — Manual ${nombre}`;
-    document.title = `TorqueStock — Manual ${nombre}`;
-
-    // Imprimir / PDF (no se permite cuando la página está dentro de otra, como en claude.ai)
-    const btnImprimir = document.getElementById("btnImprimirManual");
-    let dentroDeMarco = true;
-    try { dentroDeMarco = window.self !== window.top; } catch (e) { /* dentro de otra página */ }
-    if (dentroDeMarco) btnImprimir.classList.add("oculto");
-    btnImprimir.addEventListener("click", () => window.print());
-  </script>
-  <script src="js/pwa.js"></script>
+  <script src="js/ayuda.js"></script>
 </body>
 </html>

@@ -138,21 +138,6 @@
 
   <script src="js/datos.js"></script>
   <script src="js/sesion.js"></script>
-  <script type="module">
-    // Sin sesión (desde el login) se puede consultar la ficha del proyecto.
-    // Ya dentro del sistema, solo el Jefe de almacén (permiso "acerca").
-    const usuario = Sesion.actual();
-    if (usuario) {
-      await DB.listo;
-      if (!DB.permisos(usuario.rol).acerca) {
-        window.location.replace("panel.html");
-        throw new Error("Sin permiso para Acerca");
-      }
-      document.getElementById("btnVolver").href = "panel.html";
-      document.querySelector("#btnVolver span").textContent = "Volver al panel";
-    }
-    document.body.hidden = false;
-  </script>
-  <script src="js/pwa.js"></script>
+  <script type="module" src="js/acerca.js"></script>
 </body>
 </html>
