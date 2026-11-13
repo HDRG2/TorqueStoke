@@ -61,11 +61,19 @@ def alta(con, datos, quien):
     if minimo >= maximo:
         raise ErrorRegla("El torque mínimo debe ser menor que el máximo.")
     fecha = leer_fecha(datos["proximaCalibracion"]).isoformat()
+    # Estado inicial: Disponible, o En reparación si llega con desgaste y necesita ajuste
+    # (en ese caso también deberá recalibrarse antes de prestarse)
+    estado = datos.get("estadoInicial") or DISPONIBLE
+    if estado not in (DISPONIBLE, REPARACION):
+        raise ErrorRegla("El estado inicial debe ser Disponible o En reparación.")
+    en_reparacion = estado == REPARACION
+    nota = "Ingresó al almacén en reparación" if en_reparacion else ""
 
     con.execute("INSERT INTO herramientas (codigo, nombre, categoria, torque_min, torque_max, "
-                "proxima_calibracion, estado) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (codigo, nombre, categoria, minimo, maximo, fecha, DISPONIBLE))
-    registrar_movimiento(con, "Alta", codigo, f"{nombre} ({numero(minimo)}-{numero(maximo)} Nm)", quien)
+                "proxima_calibracion, estado, nota, requiere_calibracion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (codigo, nombre, categoria, minimo, maximo, fecha, estado, nota, int(en_reparacion)))
+    detalle = f"{nombre} ({numero(minimo)}-{numero(maximo)} Nm)"
+    registrar_movimiento(con, "Alta", codigo, detalle + (" — en reparación" if en_reparacion else ""), quien)
     return codigo
 
 

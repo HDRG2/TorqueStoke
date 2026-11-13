@@ -326,6 +326,7 @@ $("formAlta").addEventListener("submit", (e) => {
     const h = await DB.altaHerramienta({
       codigo: $("altaCodigo").value, categoria: $("altaCategoria").value, nombre: $("altaNombre").value,
       torqueMin: $("altaMin").value, torqueMax: $("altaMax").value, proximaCalibracion: $("altaFecha").value,
+      estadoInicial: $("altaEstado").value,
     }, usuario.usuario);
     cerrarModal("modalAlta");
     avisar(`Herramienta ${h.codigo} registrada.`, "ok");

@@ -11,6 +11,7 @@ TorqueStock funciona **de forma local, sin internet**. Una computadora del almac
 TorqueStock/
 ├── Iniciar servidor.bat        Doble clic para arrancar el sistema
 ├── Registrar usuario.bat       Doble clic para dar de alta un empleado o cambiar su contraseña
+├── Ejecutar pruebas.bat        Doble clic para correr las pruebas de aceptación
 ├── README.md
 │
 ├── frontend/                   Lo que ve el usuario: HTML, CSS y JavaScript
@@ -36,6 +37,7 @@ TorqueStock/
 └── backend/                    Servidor (Python) y base de datos (SQLite)
     ├── servidor.py             Arranca el servidor
     ├── registrar_usuario.py    Registra empleados con la contraseña cifrada
+    ├── pruebas.py              Pruebas de aceptación (base temporal; no toca los datos reales)
     ├── iniciar.ps1             Abre el puerto en el Firewall y arranca servidor.py
     ├── app/
     │   ├── config.py           Rutas, puerto y constantes
@@ -102,18 +104,22 @@ Las contraseñas **no se guardan**: la tabla `usuarios` solo tiene una sal aleat
 - Aplica **en el servidor** los permisos por rol y las reglas (semáforo, bloqueo por calibración vencida, estados, líneas y categorías válidas). Aunque alguien modifique la página, no puede saltárselos.
 - No tiene ninguna acción para borrar el almacén.
 - Atiende una escritura a la vez: dos equipos no pueden prestar la misma herramienta al mismo tiempo.
-- Cada equipo pregunta cada 3 segundos si hubo cambios: lo que registra el almacenista aparece solo en la pantalla de Calidad y del Jefe.
+- Cada equipo pregunta cada 2 segundos si hubo cambios (RNF-02: menos de 3 s): lo que registra el almacenista aparece solo en la pantalla de Calidad y del Jefe.
 - Si se pierde la red aparece una barra roja *"Sin conexión con el servidor del almacén"* y no se registra nada hasta que vuelva.
 - Si la página se abre sin el servidor (con doble clic en un HTML) muestra el aviso *"Se necesita el servidor del almacén"*.
 
 **API:** `GET /api/config` (permisos y catálogos), `POST /api/login`, `POST /api/logout`, `GET /api/estado`, `GET /api/version`, `POST /api/accion` (`alta`, `prestar`, `devolver`, `devolverConDanio`, `reparar`, `reincorporar`, `baja`, `calibrar`). Todas, menos `config` y `login`, piden la sesión en el encabezado `Authorization: Bearer <token>`.
+
+## Pruebas de aceptación (Sección 5 del PIA)
+
+Doble clic en **`Ejecutar pruebas.bat`** (o `python backend/pruebas.py`). Arranca el servidor con una base de datos **temporal** y simula los escenarios del PIA: alta de una llave dinamométrica vigente, intento de préstamo de una herramienta con calibración vencida y devolución en ventanilla, además de permisos por rol, validaciones, recalibración tras reparación, indicadores, rendimiento y seguridad. Muestra ✔ o ✘ por cada prueba y el total (27 pruebas).
 
 ## Requerimientos cubiertos
 
 | ID | Dónde |
 |---|---|
 | RF-01 Login | `index.html` + `login.js` (máx. 15 caracteres, solo letras y números, Enter para avanzar), contraseñas cifradas, permisos por rol revisados en el servidor |
-| RF-02 Alta | **+ Nueva herramienta** (Jefe) → tabla `herramientas` |
+| RF-02 Alta | **+ Nueva herramienta** (Jefe): código, nombre, categoría, rango, próxima calibración y estado inicial → tabla `herramientas` |
 | RF-03 Búsqueda y filtros | Buscador + filtros por estado, semáforo y turno |
 | RF-04 Préstamos | **Prestar** → empleado, nombre, línea |
 | RF-05 Devoluciones | **Devolver** en un clic; **Devolver con daño** tras inspección |
