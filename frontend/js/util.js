@@ -28,7 +28,9 @@ function etiquetaSemaforo(h, conDetalle = true) {
   const s = DB.semaforo(h);
   const detalle = s.dias < 0 ? `hace ${-s.dias} d` : s.dias === 0 ? "hoy" : `en ${s.dias} d`;
   return `<span class="etiqueta sem-${s.color}">${s.texto}</span>` +
-    (conDetalle ? `<span class="sub">${fmtFecha(h.proximaCalibracion)} (${detalle})</span>` : "");
+    (!conDetalle ? "" : s.recalibrar
+      ? `<span class="sub">Pendiente tras reparación</span>`
+      : `<span class="sub">${fmtFecha(h.proximaCalibracion)} (${detalle})</span>`);
 }
 
 // Etiqueta del estado de la herramienta

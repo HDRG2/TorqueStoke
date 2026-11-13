@@ -50,6 +50,7 @@ def preparar_base():
     if "usuarios" in tablas:
         with conectar() as con:   # por si el esquema agregó tablas o índices nuevos
             con.executescript(config.ESQUEMA.read_text(encoding="utf-8"))
+            _agregar_columnas_nuevas(con)
         return ""
     if "herramientas" in tablas:
         return _migrar_formato_anterior()
@@ -58,6 +59,17 @@ def preparar_base():
         con.executescript(config.ESQUEMA.read_text(encoding="utf-8"))
         con.executescript(config.DATOS_EJEMPLO.read_text(encoding="utf-8"))
     return "nueva"
+
+
+def _agregar_columnas_nuevas(con):
+    """Columnas que se agregaron después de crear la base (CREATE TABLE IF NOT EXISTS no las agrega)."""
+    columnas = {f["name"] for f in con.execute("PRAGMA table_info(herramientas)")}
+    if "requiere_calibracion" not in columnas:
+        con.execute("ALTER TABLE herramientas ADD COLUMN requiere_calibracion INTEGER NOT NULL DEFAULT 0 "
+                    "CHECK (requiere_calibracion IN (0, 1))")
+        # Las que ya estaban en reparación deberán recalibrarse antes de volver a prestarse
+        con.execute("UPDATE herramientas SET requiere_calibracion = 1 WHERE estado = 'En reparación'")
+        print("\n  Se agregó a la base el control de recalibración después de una reparación.")
 
 
 def _mudar_de_ubicacion_anterior():
@@ -103,6 +115,7 @@ def _migrar_formato_anterior():
                 INSERT INTO movimientos (fecha, tipo, codigo, detalle, usuario)
                     SELECT fecha, tipo, codigo, detalle, usuario FROM vieja.movimientos
                     WHERE codigo IN (SELECT codigo FROM herramientas) ORDER BY id;
+                UPDATE herramientas SET requiere_calibracion = 1 WHERE estado = 'En reparación';
                 UPDATE meta SET valor = '2' WHERE clave = 'version';
                 COMMIT;
             """)
@@ -164,7 +177,8 @@ def _herramienta_json(f):
     return {"codigo": f["codigo"], "nombre": f["nombre"], "categoria": f["categoria"],
             "torqueMin": numero(f["torque_min"]), "torqueMax": numero(f["torque_max"]),
             "proximaCalibracion": f["proxima_calibracion"], "estado": f["estado"],
-            "prestamo": prestamo, "nota": f["nota"]}
+            "prestamo": prestamo, "nota": f["nota"],
+            "requiereCalibracion": bool(f["requiere_calibracion"])}
 
 
 def estado_completo(con):

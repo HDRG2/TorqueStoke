@@ -147,6 +147,7 @@
             <li><span class="etiqueta sem-verde">Vigente</span> Faltan más de 15 días. Se puede prestar.</li>
             <li><span class="etiqueta sem-amarillo">Por vencer</span> Vence en 15 días o menos. Se puede prestar, pero avisa a Calidad para programar la calibración.</li>
             <li><span class="etiqueta sem-rojo">Vencida</span> Ya pasó la fecha. <strong>El botón Prestar se bloquea</strong> y la herramienta no puede salir del almacén hasta recalibrarse.</li>
+            <li><span class="etiqueta sem-rojo">Recalibrar</span> La herramienta pasó por reparación. <strong>El botón Prestar se bloquea</strong> hasta que Calidad registre una nueva calibración (ISO 6789).</li>
           </ul>
         </div>
       </section>
@@ -202,6 +203,7 @@
             <li>Haz clic en <strong>Guardar certificado</strong>.</li>
           </ol>
           <p>La etiqueta vuelve a <span class="etiqueta sem-verde">Vigente</span> y la herramienta se puede prestar de nuevo.</p>
+          <p class="nota">Las herramientas que regresan de reparación aparecen en rojo como <span class="etiqueta sem-rojo">Recalibrar</span> (filtro <em>Calibración vencida</em> y Agenda de calibración). Se pueden calibrar aunque sigan en reparación.</p>
         </div>
       </section>
 
@@ -238,8 +240,8 @@
             <li>Para enviar una herramienta disponible a mantenimiento o taller externo: <strong>⋯ Ficha → Enviar a reparación</strong>, escribe el motivo y confirma.</li>
             <li>Mientras esté <span class="etiqueta est-reparacion">En reparación</span> no se puede prestar.</li>
             <li>Cuando el técnico de mantenimiento la entregue reparada, haz clic en <span class="btn btn-verde btn-sm">Reincorporar</span>: vuelve a <span class="etiqueta est-disponible">Disponible</span>.</li>
+            <li>Toda herramienta reparada queda en <span class="etiqueta sem-rojo">Recalibrar</span>: <strong>no se puede prestar hasta que Calidad registre su nueva calibración</strong>, porque la reparación pudo cambiar su torque (ISO 6789).</li>
           </ol>
-          <p class="nota">Si la reparación afectó la calibración, pide a Calidad que actualice la fecha antes de prestarla.</p>
         </div>
       </section>
 
@@ -292,7 +294,7 @@
             <dt>"Usuario o contraseña incorrectos".</dt>
             <dd>Revisa que no tengas activadas las mayúsculas en la contraseña. Si persiste, pide al Jefe de almacén que verifique tu usuario.</dd>
             <dt data-roles="Administrador Almacenista">El botón Prestar está gris.</dt>
-            <dd data-roles="Administrador Almacenista">La herramienta tiene la calibración vencida. Envíala a Calidad para recalibrar.</dd>
+            <dd data-roles="Administrador Almacenista">La herramienta tiene la calibración vencida o regresó de reparación (etiqueta <em>Recalibrar</em>). Envíala a Calidad para recalibrar.</dd>
             <dt data-roles="Almacenista Calidad">No veo el botón "+ Nueva herramienta" o "Calibración".</dt>
             <dd data-roles="Almacenista Calidad">Tu rol no tiene ese permiso (ver sección 2).</dd>
             <dt>La página me regresa al login.</dt>

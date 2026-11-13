@@ -141,4 +141,7 @@ INSERT INTO movimientos (fecha, tipo, codigo, detalle, usuario) VALUES
 
 INSERT INTO meta (clave, valor) VALUES ('version', '1');
 
+-- Las herramientas en reparación deben recalibrarse antes de volver a prestarse
+UPDATE herramientas SET requiere_calibracion = 1 WHERE estado = 'En reparación';
+
 COMMIT;

@@ -112,10 +112,12 @@ function cumpleBusqueda(h, texto) {
 // Todas las acciones disponibles para la herramienta según su estado y el rol
 function accionesDe(h) {
   const a = [];
-  const vencida = DB.semaforo(h).color === "rojo";
+  const s = DB.semaforo(h);
+  const vencida = s.color === "rojo";
+  const motivo = s.recalibrar ? "Bloqueada: debe recalibrarse después de la reparación" : "Bloqueada: calibración vencida";
   switch (h.estado) {
     case E.DISPONIBLE:
-      if (puede.prestar) a.push({ id: "prestar", texto: "Prestar", clase: "btn-naranja", deshabilitada: vencida, titulo: vencida ? "Bloqueada: calibración vencida" : "" });
+      if (puede.prestar) a.push({ id: "prestar", texto: "Prestar", clase: "btn-naranja", deshabilitada: vencida, titulo: vencida ? motivo : "" });
       if (puede.calibrar) a.push({ id: "calibrar", texto: "Calibración", clase: "btn-borde" });
       if (puede.reparar) a.push({ id: "reparar", texto: "Enviar a reparación", clase: "btn-borde" });
       if (puede.baja) a.push({ id: "baja", texto: "Dar de baja", clase: "btn-rojo-borde" });

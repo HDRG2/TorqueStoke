@@ -152,6 +152,8 @@ const DB = (() => {
   }
   function semaforo(herr) {
     const d = diasParaVencer(herr);
+    // Pasó por reparación: no se presta hasta que Calidad registre una nueva calibración (ISO 6789)
+    if (herr.requiereCalibracion) return { color: "rojo", texto: "Recalibrar", dias: d, recalibrar: true };
     if (d < 0) return { color: "rojo", texto: "Vencida", dias: d };
     if (d <= DIAS_AVISO) return { color: "amarillo", texto: "Por vencer", dias: d };
     return { color: "verde", texto: "Vigente", dias: d };

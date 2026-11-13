@@ -15,9 +15,11 @@ QUITAR_PRESTAMO = "prestamo_empleado = NULL, prestamo_operador = NULL, prestamo_
 
 
 # ---------------------------------------------------------------- ayudas
-def semaforo(con, proxima_calibracion):
-    """RF-06: verde (vigente), amarillo (vence pronto) o rojo (vencida)."""
-    dias = (date.fromisoformat(proxima_calibracion) - date.today()).days
+def semaforo(con, h):
+    """RF-06: verde (vigente), amarillo (vence pronto) o rojo (vencida o pendiente de recalibrar)."""
+    if h["requiere_calibracion"]:
+        return "rojo"
+    dias = (date.fromisoformat(h["proxima_calibracion"]) - date.today()).days
     if dias < 0:
         return "rojo"
     return "amarillo" if dias <= leer_config(con, "diasAviso", 15) else "verde"
@@ -71,7 +73,10 @@ def prestar(con, h, datos, quien):
     """RF-04: préstamo a una línea, con el bloqueo por calibración vencida (RF-06)."""
     if h["estado"] != DISPONIBLE:
         raise ErrorRegla("La herramienta no está disponible.")
-    if semaforo(con, h["proxima_calibracion"]) == "rojo":
+    if h["requiere_calibracion"]:
+        raise ErrorRegla("BLOQUEADO: la herramienta pasó por reparación y Calidad debe recalibrarla "
+                         "antes de prestarla (ISO 6789).")
+    if semaforo(con, h) == "rojo":
         raise ErrorRegla("BLOQUEADO: la calibración está vencida. No se puede prestar (IATF 16949 / ISO 6789).")
     empleado = str(datos.get("empleado") or "").strip()
     operador = str(datos.get("operador") or "").strip()
@@ -105,8 +110,8 @@ def devolver_con_danio(con, h, datos, quien):
     """Devolución con daño detectado en la inspección: la herramienta pasa a reparación."""
     exigir_estado(h, PRESTAMO)
     danio = texto(datos.get("texto"), "el daño encontrado")
-    con.execute(f"UPDATE herramientas SET estado = ?, nota = ?, {QUITAR_PRESTAMO} WHERE codigo = ?",
-                (REPARACION, danio, h["codigo"]))
+    con.execute(f"UPDATE herramientas SET estado = ?, nota = ?, requiere_calibracion = 1, {QUITAR_PRESTAMO} "
+                "WHERE codigo = ?", (REPARACION, danio, h["codigo"]))
     registrar_movimiento(con, "Devolución", h["codigo"], f"{_recibida(h)} — CON DAÑO: {danio}", quien)
     registrar_movimiento(con, "Reparación", h["codigo"], danio, quien)
 
@@ -115,12 +120,14 @@ def reparar(con, h, datos, quien):
     """Enviar a reparación externa o mantenimiento (Jefe de almacén)."""
     exigir_estado(h, DISPONIBLE)
     motivo = texto(datos.get("texto"), "el motivo")
-    con.execute("UPDATE herramientas SET estado = ?, nota = ? WHERE codigo = ?", (REPARACION, motivo, h["codigo"]))
+    con.execute("UPDATE herramientas SET estado = ?, nota = ?, requiere_calibracion = 1 WHERE codigo = ?",
+                (REPARACION, motivo, h["codigo"]))
     registrar_movimiento(con, "Reparación", h["codigo"], motivo, quien)
 
 
 def reincorporar(con, h, datos, quien):
-    """Regresa al servicio una herramienta reparada."""
+    """Regresa al servicio una herramienta reparada. Si Calidad todavía no la recalibra,
+    queda Disponible pero en rojo ("Recalibrar") y no se puede prestar."""
     exigir_estado(h, REPARACION)
     con.execute("UPDATE herramientas SET estado = ?, nota = '' WHERE codigo = ?", (DISPONIBLE, h["codigo"]))
     registrar_movimiento(con, "Reincorporación", h["codigo"], "Reparada y reincorporada al servicio", quien)
@@ -143,9 +150,12 @@ def calibrar(con, h, datos, quien):
     nueva = leer_fecha(datos["fecha"])
     if nueva <= date.today():
         raise ErrorRegla("La nueva fecha debe ser posterior a hoy.")
-    con.execute("UPDATE herramientas SET proxima_calibracion = ? WHERE codigo = ?", (nueva.isoformat(), h["codigo"]))
-    registrar_movimiento(con, "Recalibración", h["codigo"],
-                         f'Vigencia {h["proxima_calibracion"]} → {nueva.isoformat()}', quien)
+    con.execute("UPDATE herramientas SET proxima_calibracion = ?, requiere_calibracion = 0 WHERE codigo = ?",
+                (nueva.isoformat(), h["codigo"]))
+    detalle = f'Vigencia {h["proxima_calibracion"]} → {nueva.isoformat()}'
+    if h["requiere_calibracion"]:
+        detalle += " (después de reparación)"
+    registrar_movimiento(con, "Recalibración", h["codigo"], detalle, quien)
 
 
 # Acciones sobre una herramienta que ya existe

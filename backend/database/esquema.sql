@@ -65,7 +65,9 @@ CREATE TABLE IF NOT EXISTS herramientas (
     prestamo_empleado    TEXT,
     prestamo_operador    TEXT,
     prestamo_linea       TEXT REFERENCES lineas (nombre),
-    prestamo_fecha       TEXT
+    prestamo_fecha       TEXT,
+    requiere_calibracion INTEGER NOT NULL DEFAULT 0 CHECK (requiere_calibracion IN (0, 1))
+                         -- 1 = pasó por reparación: no se presta hasta que Calidad la recalibre (ISO 6789)
 );
 
 -- Bitácora: cada préstamo, devolución, reparación, calibración, alta y baja
