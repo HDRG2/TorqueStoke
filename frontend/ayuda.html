@@ -274,11 +274,12 @@
         <div class="panel-cab"><h2>16. Reportes y auditoría</h2></div>
         <div class="panel-cuerpo">
           <p class="rol-chip">Jefe de almacén · Ingeniero de calidad</p>
-          <p>El botón <strong>Reportes</strong> de la barra superior abre una página con:</p>
+          <p>El botón <strong>Reportes</strong> de la barra superior abre los reportes de tu rol:</p>
           <ul>
-            <li>Resumen del almacén y gráficas de <strong>herramientas más prestadas</strong>, <strong>préstamos por línea</strong> y <strong>operadores con más préstamos</strong>.</li>
-            <li><strong>Agenda de calibración</strong>: herramientas vencidas y por vencer, ordenadas por fecha.</li>
-            <li><strong>Préstamos pendientes</strong>: los que exceden el turno, con su operador responsable.</li>
+            <li data-roles="Calidad"><strong>Resumen de calibración</strong>: herramientas activas, por vencer, vencidas o por recalibrar y en reparación.</li>
+            <li data-roles="Administrador">Resumen del almacén y gráficas de <strong>herramientas más prestadas</strong>, <strong>préstamos por línea</strong> y <strong>operadores con más préstamos</strong>.</li>
+            <li><strong>Agenda de calibración</strong>: herramientas vencidas, por vencer y pendientes de recalibrar tras una reparación, ordenadas por fecha.</li>
+            <li data-roles="Administrador"><strong>Préstamos pendientes</strong>: los que exceden el turno, con su operador responsable.</li>
             <li><strong>Bitácora completa</strong> con filtros por texto, tipo de movimiento y rango de fechas.</li>
           </ul>
           <p>Exporta a Excel con los botones <strong>CSV</strong> (inventario, agenda y movimientos) o usa <strong>Imprimir / PDF</strong> para entregar el reporte en auditoría.</p>

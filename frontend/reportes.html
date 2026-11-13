@@ -20,7 +20,7 @@
       <img class="logo" src="img/logo.svg" alt="" width="38" height="38">
       <div class="marca-texto">
         <strong>TorqueStock</strong>
-        <small>Reportes y auditoría</small>
+        <small id="subtituloReportes">Reportes y auditoría</small>
       </div>
     </div>
     <nav class="usuario-info" aria-label="Menú principal">
@@ -42,13 +42,13 @@
 
   <div class="contenedor">
     <div class="encabezado-impresion">
-      <h2>TorqueStock — Reporte del Almacén de Herramientas de Torque</h2>
+      <h2 id="tituloImpresion">TorqueStock — Reporte del Almacén de Herramientas de Torque</h2>
       <p>Grupo Industrial Par-Tec · Generado el <span id="fechaReporte"></span> por <span id="usuarioReporte"></span></p>
     </div>
 
     <div class="panel seccion-reporte no-imprimir">
       <div class="panel-cab">
-        <h2>Reportes ejecutivos y de auditoría</h2>
+        <h2 id="tituloReportes">Reportes ejecutivos y de auditoría</h2>
         <div class="botonera">
           <button class="btn btn-borde btn-sm" id="csvInventario">Inventario (CSV)</button>
           <button class="btn btn-borde btn-sm" id="csvAgenda">Agenda de calibración (CSV)</button>
@@ -59,17 +59,19 @@
     </div>
 
     <!-- Resumen del almacén -->
-    <section class="kpis kpis-6">
-      <div class="kpi"><div class="titulo">Herramientas activas</div><div class="valor" id="rTotal">0</div></div>
-      <div class="kpi disp"><div class="titulo">Disponibles</div><div class="valor" id="rDisp">0</div></div>
-      <div class="kpi prest"><div class="titulo">En préstamo</div><div class="valor" id="rPrest">0</div></div>
-      <div class="kpi venc"><div class="titulo">Calibración vencida</div><div class="valor" id="rVenc">0</div></div>
-      <div class="kpi rep"><div class="titulo">En reparación</div><div class="valor" id="rRep">0</div></div>
-      <div class="kpi ext"><div class="titulo">Exceden turno</div><div class="valor" id="rExc">0</div></div>
+    <!-- data-roles: qué roles ven cada parte (Administrador = Jefe de almacén) -->
+    <section class="kpis kpis-6" id="kpisReporte">
+      <div class="kpi" data-roles="Administrador Calidad"><div class="titulo">Herramientas activas</div><div class="valor" id="rTotal">0</div></div>
+      <div class="kpi disp" data-roles="Administrador"><div class="titulo">Disponibles</div><div class="valor" id="rDisp">0</div></div>
+      <div class="kpi prest" data-roles="Administrador"><div class="titulo">En préstamo</div><div class="valor" id="rPrest">0</div></div>
+      <div class="kpi ext" data-roles="Calidad"><div class="titulo">Por vencer (≤ 15 días)</div><div class="valor" id="rPorVenc">0</div></div>
+      <div class="kpi venc" data-roles="Administrador Calidad"><div class="titulo">Calibración vencida o por recalibrar</div><div class="valor" id="rVenc">0</div></div>
+      <div class="kpi rep" data-roles="Administrador Calidad"><div class="titulo">En reparación</div><div class="valor" id="rRep">0</div></div>
+      <div class="kpi ext" data-roles="Administrador"><div class="titulo">Exceden turno</div><div class="valor" id="rExc">0</div></div>
     </section>
 
-    <!-- Utilización -->
-    <div class="reporte-grid">
+    <!-- Utilización (reporte ejecutivo del Jefe de almacén) -->
+    <div class="reporte-grid" data-roles="Administrador">
       <section class="panel">
         <div class="panel-cab"><h2>Herramientas más prestadas</h2></div>
         <ul class="barras" id="usoHerramienta"></ul>
@@ -85,8 +87,8 @@
     </div>
 
     <!-- Calibración y responsables -->
-    <div class="rejilla rejilla-mitad">
-      <section class="panel seccion-reporte">
+    <div class="rejilla rejilla-mitad" id="rejillaCalibracion">
+      <section class="panel seccion-reporte" data-roles="Administrador Calidad">
         <div class="panel-cab"><h2>Agenda de calibración (vencidas y por vencer)</h2></div>
         <div class="tabla-envoltura">
           <table class="tabla-movil">
@@ -95,7 +97,7 @@
           </table>
         </div>
       </section>
-      <section class="panel seccion-reporte">
+      <section class="panel seccion-reporte" data-roles="Administrador">
         <div class="panel-cab"><h2>Préstamos pendientes que exceden el turno</h2></div>
         <div class="tabla-envoltura">
           <table class="tabla-movil">

@@ -370,6 +370,7 @@ tr.fila-baja td { color: #888; }
   .manual-contenido { gap: 12px; }
 }
 .rejilla-mitad { grid-template-columns: 1fr 1fr; }
+.rejilla-completa { grid-template-columns: 1fr; }
 @media (max-width: 1100px) { .rejilla-mitad { grid-template-columns: 1fr; } }
 
 /* =========================================================

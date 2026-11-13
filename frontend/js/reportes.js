@@ -16,7 +16,20 @@ $("nombreUsuario").textContent = usuario.nombre;
 $("rolUsuario").textContent = NOMBRE_ROL[usuario.rol] || usuario.rol;
 $("btnSalir").onclick = () => Sesion.cerrar();
 $("fechaReporte").textContent = new Date().toLocaleString("es-MX", { dateStyle: "long", timeStyle: "short" });
-$("usuarioReporte").textContent = `${usuario.nombre} (${usuario.rol})`;
+$("usuarioReporte").textContent = `${usuario.nombre} (${NOMBRE_ROL[usuario.rol] || usuario.rol})`;
+
+// ---------- Reportes por rol ----------
+// Cada parte de la página dice en data-roles qué roles la usan; se ocultan las que no son del rol.
+// Jefe de almacén: todo. Ingeniero de calidad: calibración y auditoría (sin utilización ni turnos).
+document.querySelectorAll("[data-roles]").forEach((el) =>
+  el.classList.toggle("oculto", !el.dataset.roles.split(" ").includes(usuario.rol)));
+if (usuario.rol === "Calidad") {
+  $("kpisReporte").classList.remove("kpis-6");                // 4 tarjetas en lugar de 6
+  $("rejillaCalibracion").classList.replace("rejilla-mitad", "rejilla-completa");  // la agenda ocupa todo el ancho
+  $("tituloReportes").textContent = "Reportes de calidad y auditoría";
+  $("subtituloReportes").textContent = "Reportes de calidad";
+  $("tituloImpresion").textContent = "TorqueStock — Reporte de calidad y calibración";
+}
 
 // ---------- Resumen ----------
 const k = DB.indicadores();
@@ -24,6 +37,7 @@ $("rTotal").textContent = k.total;
 $("rDisp").textContent = k.disponibles;
 $("rPrest").textContent = k.enPrestamo;
 $("rVenc").textContent = k.vencidas;
+$("rPorVenc").textContent = k.porVencer;
 $("rRep").textContent = k.enReparacion;
 $("rExc").textContent = k.excedidas;
 
